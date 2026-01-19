@@ -1,0 +1,2 @@
+# MealMind
+Comet hackaton project
