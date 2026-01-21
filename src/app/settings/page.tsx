@@ -15,6 +15,8 @@ const COMMON_RESTRICTIONS = [
   { name: 'Shellfish-Free', type: 'allergy' as const },
   { name: 'Egg-Free', type: 'allergy' as const },
   { name: 'Soy-Free', type: 'allergy' as const },
+  { name: 'No Red Meat', type: 'preference' as const },
+  { name: 'PCOS-Friendly', type: 'medical' as const },
   { name: 'Low-Sodium', type: 'medical' as const },
   { name: 'Diabetic-Friendly', type: 'medical' as const }
 ];

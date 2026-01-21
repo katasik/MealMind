@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Upload, FileText, Loader2, Check, AlertCircle } from 'lucide-react';
+import { X, Upload, FileText, Loader2, Check, AlertCircle, Globe } from 'lucide-react';
 
 interface ParsedRecipe {
   name: string;
@@ -24,8 +24,9 @@ interface AddRecipeModalProps {
 }
 
 export default function AddRecipeModal({ isOpen, onClose, onSave }: AddRecipeModalProps) {
-  const [mode, setMode] = useState<'select' | 'text' | 'pdf'>('select');
+  const [mode, setMode] = useState<'select' | 'text' | 'pdf' | 'url'>('select');
   const [text, setText] = useState('');
+  const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [parsedRecipes, setParsedRecipes] = useState<ParsedRecipe[]>([]);
@@ -36,6 +37,7 @@ export default function AddRecipeModal({ isOpen, onClose, onSave }: AddRecipeMod
   const resetState = () => {
     setMode('select');
     setText('');
+    setUrl('');
     setLoading(false);
     setError(null);
     setParsedRecipes([]);
@@ -74,6 +76,45 @@ export default function AddRecipeModal({ isOpen, onClose, onSave }: AddRecipeMod
       setSelectedRecipes(new Set(data.recipes.map((_: ParsedRecipe, i: number) => i)));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to parse recipes');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const parseUrl = async () => {
+    if (!url.trim()) {
+      setError('Please enter a recipe URL');
+      return;
+    }
+
+    // Basic URL validation
+    try {
+      new URL(url);
+    } catch {
+      setError('Please enter a valid URL (e.g., https://example.com/recipe)');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/recipes/parse', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to parse recipe from URL');
+      }
+
+      setParsedRecipes(data.recipes);
+      setSelectedRecipes(new Set(data.recipes.map((_: ParsedRecipe, i: number) => i)));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to parse recipe from URL');
     } finally {
       setLoading(false);
     }
@@ -185,7 +226,17 @@ export default function AddRecipeModal({ isOpen, onClose, onSave }: AddRecipeMod
                     <p className="text-gray-600 text-center mb-6">
                       How would you like to add your recipe?
                     </p>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-3 gap-4">
+                      <button
+                        onClick={() => setMode('url')}
+                        className="flex flex-col items-center gap-3 p-6 border-2 border-dashed border-gray-300 rounded-xl hover:border-orange-400 hover:bg-orange-50 transition-colors"
+                      >
+                        <Globe className="w-10 h-10 text-orange-500" />
+                        <span className="font-medium text-gray-700">From URL</span>
+                        <span className="text-xs text-gray-500 text-center">
+                          Paste a recipe link
+                        </span>
+                      </button>
                       <button
                         onClick={() => setMode('text')}
                         className="flex flex-col items-center gap-3 p-6 border-2 border-dashed border-gray-300 rounded-xl hover:border-orange-400 hover:bg-orange-50 transition-colors"
@@ -193,7 +244,7 @@ export default function AddRecipeModal({ isOpen, onClose, onSave }: AddRecipeMod
                         <FileText className="w-10 h-10 text-orange-500" />
                         <span className="font-medium text-gray-700">Paste Text</span>
                         <span className="text-xs text-gray-500 text-center">
-                          Copy and paste recipe text
+                          Copy and paste recipe
                         </span>
                       </button>
                       <button
@@ -207,6 +258,49 @@ export default function AddRecipeModal({ isOpen, onClose, onSave }: AddRecipeMod
                         </span>
                       </button>
                     </div>
+                  </div>
+                )}
+
+                {mode === 'url' && (
+                  <div className="space-y-4">
+                    <button
+                      onClick={() => setMode('select')}
+                      className="text-sm text-gray-500 hover:text-gray-700"
+                    >
+                      &larr; Back
+                    </button>
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Recipe URL
+                      </label>
+                      <input
+                        type="url"
+                        value={url}
+                        onChange={(e) => setUrl(e.target.value)}
+                        placeholder="https://example.com/recipe/delicious-pasta"
+                        className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:outline-none"
+                      />
+                      <p className="text-xs text-gray-500">
+                        Paste a link to any recipe page. We&apos;ll extract the recipe details automatically.
+                      </p>
+                    </div>
+                    <button
+                      onClick={parseUrl}
+                      disabled={loading || !url.trim()}
+                      className="w-full py-3 bg-orange-500 text-white rounded-xl font-medium hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      {loading ? (
+                        <>
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                          Fetching recipe...
+                        </>
+                      ) : (
+                        <>
+                          <Globe className="w-5 h-5" />
+                          Import from URL
+                        </>
+                      )}
+                    </button>
                   </div>
                 )}
 

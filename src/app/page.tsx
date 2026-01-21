@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Send, Heart, ThumbsUp, ThumbsDown, Clock, Sparkles, BookOpen } from 'lucide-react';
+import { Send, Heart, ThumbsUp, ThumbsDown, Clock, Sparkles, BookOpen, ChevronDown, ChevronUp } from 'lucide-react';
 import Navigation from '@/components/Navigation';
 
 interface SavedRecipeOption {
@@ -37,7 +37,20 @@ export default function ChatPage() {
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [expandedRecipes, setExpandedRecipes] = useState<Set<number>>(new Set());
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const toggleRecipeExpand = (index: number) => {
+    setExpandedRecipes(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(index)) {
+        newSet.delete(index);
+      } else {
+        newSet.add(index);
+      }
+      return newSet;
+    });
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -65,7 +78,9 @@ export default function ChatPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: messageToSend,
-          conversationHistory: messages
+          conversationHistory: messages,
+          familyId: 'demo-family',
+          userId: 'demo-user'
         })
       });
 
@@ -277,12 +292,12 @@ export default function ChatPage() {
                       <div className="mt-3 pt-3 border-t border-gray-200">
                         <h4 className="font-semibold text-sm text-gray-800 mb-2">Ingredients:</h4>
                         <ul className="text-sm text-gray-600 space-y-1">
-                          {message.recipe.ingredients.slice(0, 5).map((ing: any, i: number) => (
+                          {(expandedRecipes.has(index)
+                            ? message.recipe.ingredients
+                            : message.recipe.ingredients.slice(0, 5)
+                          ).map((ing: any, i: number) => (
                             <li key={i}>- {ing.amount} {ing.unit} {ing.name}</li>
                           ))}
-                          {message.recipe.ingredients.length > 5 && (
-                            <li className="text-gray-400">...and {message.recipe.ingredients.length - 5} more</li>
-                          )}
                         </ul>
                       </div>
                     )}
@@ -292,14 +307,34 @@ export default function ChatPage() {
                       <div className="mt-3 pt-3 border-t border-gray-200">
                         <h4 className="font-semibold text-sm text-gray-800 mb-2">Instructions:</h4>
                         <ol className="text-sm text-gray-600 space-y-1 list-decimal list-inside">
-                          {message.recipe.instructions.slice(0, 4).map((step: string, i: number) => (
+                          {(expandedRecipes.has(index)
+                            ? message.recipe.instructions
+                            : message.recipe.instructions.slice(0, 4)
+                          ).map((step: string, i: number) => (
                             <li key={i}>{step}</li>
                           ))}
-                          {message.recipe.instructions.length > 4 && (
-                            <li className="text-gray-400">...and {message.recipe.instructions.length - 4} more steps</li>
-                          )}
                         </ol>
                       </div>
+                    )}
+
+                    {/* Expand/Collapse Button */}
+                    {(message.recipe.ingredients?.length > 5 || message.recipe.instructions?.length > 4) && (
+                      <button
+                        onClick={() => toggleRecipeExpand(index)}
+                        className="mt-3 flex items-center gap-1 text-sm text-orange-600 hover:text-orange-700 font-medium"
+                      >
+                        {expandedRecipes.has(index) ? (
+                          <>
+                            <ChevronUp className="w-4 h-4" />
+                            Show less
+                          </>
+                        ) : (
+                          <>
+                            <ChevronDown className="w-4 h-4" />
+                            Show all ({message.recipe.ingredients?.length || 0} ingredients, {message.recipe.instructions?.length || 0} steps)
+                          </>
+                        )}
+                      </button>
                     )}
 
                     {/* Evaluation Scores */}
