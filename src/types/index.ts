@@ -1,5 +1,8 @@
 // Type definitions for MealMind
 
+// Meal type - used for categorizing recipes and meal planning
+export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
+
 export interface Ingredient {
   name: string;
   amount: string;
@@ -28,6 +31,9 @@ export interface Recipe {
   difficulty: 'easy' | 'medium' | 'hard';
   nutritionalInfo?: NutritionalInfo;
   tags: string[];
+  mealTypes?: MealType[];  // Which meals this recipe is suitable for (breakfast, lunch, dinner, snack)
+  imageUrl?: string;       // Recipe image URL
+  sourceUrl?: string;      // Original source URL if imported
   familyId?: string;
   createdAt: Date;
   // Telegram integration fields
@@ -120,4 +126,70 @@ export interface EvaluationResult {
   metrics: EvaluationMetrics;
   safety: SafetyCheck;
   timestamp: Date;
+}
+
+// ============================================
+// Meal Planning Types
+// ============================================
+
+export type MealPlanStatus = 'draft' | 'approved' | 'finalized';
+
+export interface PlannedMeal {
+  mealType: MealType;
+  recipeId: string;
+  recipeName: string;
+  recipeDescription?: string;
+  prepTime: number;
+  cookTime: number;
+  servings: number;
+  cuisine?: string;
+  difficulty?: 'easy' | 'medium' | 'hard';
+  ingredients: Ingredient[];
+  instructions: string[];
+  imageUrl?: string;  // Recipe image URL
+}
+
+export interface DayPlan {
+  date: string;           // YYYY-MM-DD
+  dayOfWeek: number;      // 0-6 (Sunday-Saturday)
+  dayName: string;        // "Monday", etc.
+  meals: PlannedMeal[];
+}
+
+export interface MealPlan {
+  id: string;
+  familyId: string;
+  weekStartDate: string;  // Monday of the week (YYYY-MM-DD)
+  days: DayPlan[];
+  status: MealPlanStatus;
+  createdAt: Date;
+  updatedAt: Date;
+  createdByUserId: string;
+  createdByUserName: string;
+}
+
+export interface MealPlanShoppingItem {
+  id: string;
+  ingredientName: string;
+  amount: string;
+  unit: string;
+  category: string;       // Produce, Dairy, Meat, Pantry, etc.
+  recipeNames: string[];  // Which recipes need this
+  checked: boolean;       // User has this at home
+}
+
+export interface MealPlanShoppingList {
+  id: string;
+  mealPlanId: string;
+  familyId: string;
+  weekStartDate: string;
+  items: MealPlanShoppingItem[];
+  status: 'pending' | 'active' | 'completed';
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface MealPlanSettings {
+  numberOfDays: number;           // 1-7
+  mealsPerDay: MealType[];        // Which meals to include
 }

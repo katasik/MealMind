@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Settings, AlertTriangle, Heart, X, Plus, Loader2, Check, Clock } from 'lucide-react';
+import { AlertTriangle, Heart, X, Plus, Loader2, Check, Clock } from 'lucide-react';
 import Navigation from '@/components/Navigation';
-import type { DietaryRestriction, UserPreferences } from '@/types';
+import type { DietaryRestriction } from '@/types';
 
 const COMMON_RESTRICTIONS = [
   { name: 'Gluten-Free', type: 'intolerance' as const },
@@ -28,10 +28,10 @@ const CUISINES = [
 ];
 
 const COOKING_TIMES = [
-  { value: 'quick', label: 'Quick (< 30 min)', icon: '⚡' },
-  { value: 'moderate', label: 'Moderate (30-60 min)', icon: '🍳' },
-  { value: 'extended', label: 'Extended (60+ min)', icon: '👨‍🍳' },
-  { value: 'any', label: 'Any time', icon: '⏰' }
+  { value: 'quick', label: 'Quick', desc: '< 30 min', icon: '⚡' },
+  { value: 'moderate', label: 'Moderate', desc: '30-60 min', icon: '🍳' },
+  { value: 'extended', label: 'Extended', desc: '60+ min', icon: '👨‍🍳' },
+  { value: 'any', label: 'Any', desc: 'No limit', icon: '⏰' }
 ];
 
 export default function SettingsPage() {
@@ -167,40 +167,40 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50">
+      <div className="min-h-screen bg-[#FBFBFA]">
         <Navigation />
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-10 h-10 text-orange-500 animate-spin" />
+          <Loader2 className="w-6 h-6 text-[#787774] animate-spin" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50">
+    <div className="min-h-screen bg-[#FBFBFA]">
       <Navigation />
 
       <main className="max-w-3xl mx-auto px-6 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-              <Settings className="w-8 h-8 text-orange-500" />
-              Settings
-            </h1>
-            <p className="text-gray-600 mt-1">
+            <div className="flex items-center gap-3 mb-1">
+              <span className="text-3xl">⚙️</span>
+              <h1 className="text-3xl font-bold text-[#37352F]">Settings</h1>
+            </div>
+            <p className="text-[#787774] ml-12">
               Customize your meal planning preferences
             </p>
           </div>
           <button
             onClick={saveSettings}
             disabled={saving}
-            className="flex items-center gap-2 px-5 py-3 bg-orange-500 text-white rounded-xl font-medium hover:bg-orange-600 disabled:opacity-50 transition-colors shadow-md"
+            className="flex items-center gap-2 px-4 py-2 bg-[#37352F] text-white rounded-md font-medium hover:bg-[#2F2D2A] disabled:opacity-50 transition-colors"
           >
             {saving ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <Loader2 className="w-4 h-4 animate-spin" />
             ) : saved ? (
-              <Check className="w-5 h-5" />
+              <Check className="w-4 h-4" />
             ) : null}
             {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Changes'}
           </button>
@@ -210,13 +210,13 @@ export default function SettingsPage() {
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl shadow-md p-6 mb-6"
+          className="bg-white border border-[#E9E9E7] rounded-lg p-5 mb-4"
         >
-          <div className="flex items-center gap-3 mb-4">
-            <AlertTriangle className="w-6 h-6 text-orange-500" />
-            <h2 className="text-xl font-bold text-gray-900">Dietary Restrictions</h2>
+          <div className="flex items-center gap-2 mb-3">
+            <AlertTriangle className="w-5 h-5 text-[#EB5757]" />
+            <h2 className="text-lg font-semibold text-[#37352F]">Dietary Restrictions</h2>
           </div>
-          <p className="text-gray-600 text-sm mb-4">
+          <p className="text-[#787774] text-sm mb-4">
             Select any dietary restrictions. Recipes will be filtered to ensure safety.
           </p>
 
@@ -227,10 +227,10 @@ export default function SettingsPage() {
                 <button
                   key={restriction.name}
                   onClick={() => toggleRestriction(restriction.name, restriction.type)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                     isSelected
-                      ? 'bg-orange-500 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? 'bg-[#37352F] text-white'
+                      : 'bg-[#F7F6F3] text-[#37352F] hover:bg-[#E9E9E7]'
                   }`}
                 >
                   {restriction.name}
@@ -247,12 +247,12 @@ export default function SettingsPage() {
                 .map((restriction) => (
                   <span
                     key={restriction.id}
-                    className="flex items-center gap-1 px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm"
+                    className="flex items-center gap-1 px-2.5 py-1 bg-[#DDEBF1] text-[#0B6E99] rounded-md text-sm"
                   >
                     {restriction.name}
                     <button
                       onClick={() => setRestrictions(restrictions.filter(r => r.id !== restriction.id))}
-                      className="ml-1 hover:text-orange-900"
+                      className="ml-1 hover:text-[#084B6A]"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -268,13 +268,13 @@ export default function SettingsPage() {
               onChange={(e) => setCustomRestriction(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && addCustomRestriction()}
               placeholder="Add custom restriction..."
-              className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:border-orange-500 focus:outline-none text-sm"
+              className="flex-1 px-3 py-2 bg-white border border-[#E9E9E7] rounded-md focus:border-[#37352F] focus:outline-none text-sm"
             />
             <button
               onClick={addCustomRestriction}
-              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+              className="px-3 py-2 bg-[#F7F6F3] text-[#37352F] rounded-md hover:bg-[#E9E9E7] transition-colors"
             >
-              <Plus className="w-5 h-5" />
+              <Plus className="w-4 h-4" />
             </button>
           </div>
         </motion.section>
@@ -284,13 +284,13 @@ export default function SettingsPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-white rounded-2xl shadow-md p-6 mb-6"
+          className="bg-white border border-[#E9E9E7] rounded-lg p-5 mb-4"
         >
-          <div className="flex items-center gap-3 mb-4">
-            <Heart className="w-6 h-6 text-orange-500" />
-            <h2 className="text-xl font-bold text-gray-900">Cuisine Preferences</h2>
+          <div className="flex items-center gap-2 mb-3">
+            <Heart className="w-5 h-5 text-[#EB5757]" />
+            <h2 className="text-lg font-semibold text-[#37352F]">Cuisine Preferences</h2>
           </div>
-          <p className="text-gray-600 text-sm mb-4">
+          <p className="text-[#787774] text-sm mb-4">
             Select your favorite cuisines for recipe suggestions.
           </p>
 
@@ -301,10 +301,10 @@ export default function SettingsPage() {
                 <button
                   key={cuisine}
                   onClick={() => toggleCuisine(cuisine)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                     isSelected
-                      ? 'bg-orange-500 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? 'bg-[#37352F] text-white'
+                      : 'bg-[#F7F6F3] text-[#37352F] hover:bg-[#E9E9E7]'
                   }`}
                 >
                   {cuisine}
@@ -319,13 +319,13 @@ export default function SettingsPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-white rounded-2xl shadow-md p-6 mb-6"
+          className="bg-white border border-[#E9E9E7] rounded-lg p-5 mb-4"
         >
-          <div className="flex items-center gap-3 mb-4">
-            <Clock className="w-6 h-6 text-orange-500" />
-            <h2 className="text-xl font-bold text-gray-900">Cooking Time Preference</h2>
+          <div className="flex items-center gap-2 mb-3">
+            <Clock className="w-5 h-5 text-[#2383E2]" />
+            <h2 className="text-lg font-semibold text-[#37352F]">Cooking Time Preference</h2>
           </div>
-          <p className="text-gray-600 text-sm mb-4">
+          <p className="text-[#787774] text-sm mb-4">
             How much time do you typically have to cook?
           </p>
 
@@ -334,14 +334,15 @@ export default function SettingsPage() {
               <button
                 key={time.value}
                 onClick={() => setCookingTime(time.value as any)}
-                className={`p-4 rounded-xl text-center transition-colors ${
+                className={`p-3 rounded-md text-center transition-colors ${
                   cookingTime === time.value
-                    ? 'bg-orange-500 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? 'bg-[#37352F] text-white'
+                    : 'bg-[#F7F6F3] text-[#37352F] hover:bg-[#E9E9E7]'
                 }`}
               >
-                <div className="text-2xl mb-1">{time.icon}</div>
+                <div className="text-xl mb-1">{time.icon}</div>
                 <div className="text-sm font-medium">{time.label}</div>
+                <div className="text-xs opacity-70">{time.desc}</div>
               </button>
             ))}
           </div>
@@ -352,14 +353,14 @@ export default function SettingsPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="bg-white rounded-2xl shadow-md p-6"
+          className="bg-white border border-[#E9E9E7] rounded-lg p-5"
         >
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Ingredient Preferences</h2>
+          <h2 className="text-lg font-semibold text-[#37352F] mb-4">Ingredient Preferences</h2>
 
           <div className="grid md:grid-cols-2 gap-6">
             {/* Favorites */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-[#37352F] mb-2">
                 Favorite Ingredients
               </label>
               <div className="flex gap-2 mb-3">
@@ -369,11 +370,11 @@ export default function SettingsPage() {
                   onChange={(e) => setNewFavorite(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && addIngredient('favorite')}
                   placeholder="Add ingredient..."
-                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:border-orange-500 focus:outline-none text-sm"
+                  className="flex-1 px-3 py-2 bg-white border border-[#E9E9E7] rounded-md focus:border-[#37352F] focus:outline-none text-sm"
                 />
                 <button
                   onClick={() => addIngredient('favorite')}
-                  className="px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors"
+                  className="px-3 py-2 bg-[#DBEDDB] text-[#1E7C45] rounded-md hover:bg-[#C8E4C8] transition-colors"
                 >
                   <Plus className="w-4 h-4" />
                 </button>
@@ -382,26 +383,26 @@ export default function SettingsPage() {
                 {favoriteIngredients.map((ing) => (
                   <span
                     key={ing}
-                    className="flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm"
+                    className="flex items-center gap-1 px-2.5 py-1 bg-[#DBEDDB] text-[#1E7C45] rounded-md text-sm"
                   >
                     {ing}
                     <button
                       onClick={() => removeIngredient(ing, 'favorite')}
-                      className="ml-1 hover:text-green-900"
+                      className="ml-1 hover:text-[#156534]"
                     >
                       <X className="w-3 h-3" />
                     </button>
                   </span>
                 ))}
                 {favoriteIngredients.length === 0 && (
-                  <span className="text-sm text-gray-400">No favorites added</span>
+                  <span className="text-sm text-[#787774]">No favorites added</span>
                 )}
               </div>
             </div>
 
             {/* Disliked */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-[#37352F] mb-2">
                 Disliked Ingredients
               </label>
               <div className="flex gap-2 mb-3">
@@ -411,11 +412,11 @@ export default function SettingsPage() {
                   onChange={(e) => setNewDisliked(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && addIngredient('disliked')}
                   placeholder="Add ingredient..."
-                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:border-orange-500 focus:outline-none text-sm"
+                  className="flex-1 px-3 py-2 bg-white border border-[#E9E9E7] rounded-md focus:border-[#37352F] focus:outline-none text-sm"
                 />
                 <button
                   onClick={() => addIngredient('disliked')}
-                  className="px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
+                  className="px-3 py-2 bg-[#FDEBEC] text-[#EB5757] rounded-md hover:bg-[#FBD4D7] transition-colors"
                 >
                   <Plus className="w-4 h-4" />
                 </button>
@@ -424,19 +425,19 @@ export default function SettingsPage() {
                 {dislikedIngredients.map((ing) => (
                   <span
                     key={ing}
-                    className="flex items-center gap-1 px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm"
+                    className="flex items-center gap-1 px-2.5 py-1 bg-[#FDEBEC] text-[#EB5757] rounded-md text-sm"
                   >
                     {ing}
                     <button
                       onClick={() => removeIngredient(ing, 'disliked')}
-                      className="ml-1 hover:text-red-900"
+                      className="ml-1 hover:text-[#C93C3C]"
                     >
                       <X className="w-3 h-3" />
                     </button>
                   </span>
                 ))}
                 {dislikedIngredients.length === 0 && (
-                  <span className="text-sm text-gray-400">No dislikes added</span>
+                  <span className="text-sm text-[#787774]">No dislikes added</span>
                 )}
               </div>
             </div>

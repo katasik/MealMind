@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Search, ChefHat, Loader2, BookOpen } from 'lucide-react';
+import { Plus, Search, Loader2 } from 'lucide-react';
 import type { Recipe } from '@/types';
 import RecipeCard from '@/components/RecipeCard';
 import AddRecipeModal from '@/components/AddRecipeModal';
@@ -15,7 +15,7 @@ export default function RecipesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [deleting, setDeleting] = useState<string | null>(null);
+  const [, setDeleting] = useState<string | null>(null);
 
   const fetchRecipes = async () => {
     try {
@@ -85,83 +85,83 @@ export default function RecipesPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50">
+    <div className="min-h-screen bg-[#FBFBFA]">
       <Navigation />
 
-      <main className="max-w-6xl mx-auto px-6 py-8">
+      <main className="max-w-5xl mx-auto px-6 py-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-              <BookOpen className="w-8 h-8 text-orange-500" />
-              My Recipes
-            </h1>
-            <p className="text-gray-600 mt-1">
+            <div className="flex items-center gap-3 mb-1">
+              <span className="text-3xl">📖</span>
+              <h1 className="text-3xl font-bold text-[#37352F]">My Recipes</h1>
+            </div>
+            <p className="text-[#787774] ml-12">
               {recipes.length} recipe{recipes.length !== 1 ? 's' : ''} saved
             </p>
           </div>
           <button
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 px-5 py-3 bg-orange-500 text-white rounded-xl font-medium hover:bg-orange-600 transition-colors shadow-md hover:shadow-lg"
+            className="flex items-center gap-2 px-4 py-2 bg-[#37352F] text-white rounded-md font-medium hover:bg-[#2F2D2A] transition-colors"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-4 h-4" />
             Add Recipe
           </button>
         </div>
 
         {/* Search */}
         <div className="relative mb-8">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#787774]" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search recipes by name, cuisine, or tags..."
-            className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:outline-none bg-white"
+            className="w-full pl-10 pr-4 py-2.5 bg-white border border-[#E9E9E7] rounded-md focus:border-[#37352F] focus:outline-none text-sm placeholder:text-[#787774]"
           />
         </div>
 
         {/* Content */}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20">
-            <Loader2 className="w-10 h-10 text-orange-500 animate-spin mb-4" />
-            <p className="text-gray-600">Loading recipes...</p>
+            <Loader2 className="w-6 h-6 text-[#787774] animate-spin mb-4" />
+            <p className="text-[#787774] text-sm">Loading recipes...</p>
           </div>
         ) : recipes.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center py-20"
+            className="text-center py-16"
           >
-            <ChefHat className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-gray-700 mb-2">No recipes yet</h2>
-            <p className="text-gray-500 mb-6">
+            <div className="text-5xl mb-4">📝</div>
+            <h2 className="text-xl font-semibold text-[#37352F] mb-2">No recipes yet</h2>
+            <p className="text-[#787774] mb-6 max-w-md mx-auto">
               Start building your recipe collection by adding your first recipe!
             </p>
             <button
               onClick={() => setShowAddModal(true)}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-orange-500 text-white rounded-xl font-medium hover:bg-orange-600 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-[#37352F] text-white rounded-md font-medium hover:bg-[#2F2D2A] transition-colors"
             >
-              <Plus className="w-5 h-5" />
+              <Plus className="w-4 h-4" />
               Add Your First Recipe
             </button>
           </motion.div>
         ) : filteredRecipes.length === 0 ? (
-          <div className="text-center py-20">
-            <Search className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-gray-700 mb-2">No matches found</h2>
-            <p className="text-gray-500">
+          <div className="text-center py-16">
+            <div className="text-5xl mb-4">🔍</div>
+            <h2 className="text-xl font-semibold text-[#37352F] mb-2">No matches found</h2>
+            <p className="text-[#787774]">
               Try a different search term or{' '}
               <button
                 onClick={() => setSearchQuery('')}
-                className="text-orange-500 hover:underline"
+                className="text-[#2383E2] hover:underline"
               >
                 clear the search
               </button>
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredRecipes.map((recipe) => (
               <RecipeCard
                 key={recipe.id}

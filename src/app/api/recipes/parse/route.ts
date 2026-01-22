@@ -15,6 +15,8 @@ interface ParsedRecipe {
   cuisine: string;
   difficulty: 'easy' | 'medium' | 'hard';
   tags: string[];
+  imageUrl?: string;
+  sourceUrl?: string;
 }
 
 const RECIPE_PARSE_PROMPT = `Extract ALL recipes from the provided content. The content may contain one or multiple recipes.
@@ -34,7 +36,8 @@ Return ONLY valid JSON (no markdown, no code blocks) in this exact format:
       "servings": 4,
       "cuisine": "Italian",
       "difficulty": "easy",
-      "tags": ["quick", "vegetarian"]
+      "tags": ["quick", "vegetarian"],
+      "imageUrl": "https://example.com/recipe-image.jpg"
     }
   ]
 }
@@ -46,6 +49,13 @@ CRITICAL RULES FOR INGREDIENTS:
 - NEVER duplicate quantity information between fields
 - Example: "2 db érett banán" should be: {"name": "érett banán", "amount": "2", "unit": "db"}
 - Example: "1 cup flour" should be: {"name": "flour", "amount": "1", "unit": "cup"}
+
+IMAGE EXTRACTION:
+- Look for the main recipe image (usually the largest/hero image)
+- Extract the full URL of the image
+- Look in og:image meta tags, schema.org Recipe image, or main content images
+- Only include actual image URLs (ending in .jpg, .jpeg, .png, .webp, or from known CDNs)
+- If no image is found, omit the imageUrl field
 
 Other notes:
 - Extract ALL recipes found

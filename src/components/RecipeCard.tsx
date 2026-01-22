@@ -1,7 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { Clock, Users, ChefHat, Trash2 } from 'lucide-react';
+import { Clock, Users, Trash2 } from 'lucide-react';
 import type { Recipe } from '@/types';
 
 interface RecipeCardProps {
@@ -11,52 +10,80 @@ interface RecipeCardProps {
   canDelete?: boolean;
 }
 
+const difficultyStyles = {
+  easy: 'bg-[#DBEDDB] text-[#1E7C45]',
+  medium: 'bg-[#FDF0D5] text-[#B4540A]',
+  hard: 'bg-[#FDEBEC] text-[#EB5757]'
+};
+
+const mealTypeStyles = {
+  breakfast: 'bg-[#FAEBDD] text-[#B4540A]',
+  lunch: 'bg-[#DBEDDB] text-[#2B7A6C]',
+  dinner: 'bg-[#F5E0E9] text-[#B35F2A]',
+  snack: 'bg-[#E8DEEE] text-[#6940A5]'
+};
+
 export default function RecipeCard({ recipe, onView, onDelete, canDelete }: RecipeCardProps) {
   const totalTime = (recipe.prepTime || 0) + (recipe.cookTime || 0);
 
-  const difficultyColor = {
-    easy: 'bg-green-100 text-green-700',
-    medium: 'bg-yellow-100 text-yellow-700',
-    hard: 'bg-red-100 text-red-700'
-  }[recipe.difficulty] || 'bg-gray-100 text-gray-700';
-
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+    <div
       onClick={() => onView(recipe)}
+      className="bg-white border border-[#E9E9E7] rounded-lg overflow-hidden hover:border-[#D3D3D0] hover:shadow-sm transition-all cursor-pointer flex flex-col"
     >
-      {/* Header with cuisine badge */}
-      <div className="bg-gradient-to-r from-orange-400 to-amber-400 px-4 py-3">
-        <div className="flex justify-between items-start">
-          <span className="text-white text-xs font-medium px-2 py-1 bg-white/20 rounded-full">
-            {recipe.cuisine || 'Various'}
-          </span>
-          <span className={`text-xs font-medium px-2 py-1 rounded-full ${difficultyColor}`}>
-            {recipe.difficulty}
-          </span>
+      {/* Image */}
+      {recipe.imageUrl ? (
+        <div className="h-36 w-full bg-[#F7F6F3] overflow-hidden">
+          <img
+            src={recipe.imageUrl}
+            alt={recipe.name}
+            className="w-full h-full object-cover"
+          />
         </div>
-      </div>
+      ) : (
+        <div className="h-24 w-full bg-gradient-to-br from-[#F7F6F3] to-[#E9E9E7] flex items-center justify-center">
+          <span className="text-4xl opacity-30">🍽️</span>
+        </div>
+      )}
 
       {/* Content */}
-      <div className="p-4">
-        <h3 className="font-bold text-lg text-gray-900 mb-2 line-clamp-2">
+      <div className="p-4 flex-1 flex flex-col">
+        {/* Tags row */}
+        <div className="flex items-center gap-2 mb-2 flex-wrap">
+          {recipe.cuisine && (
+            <span className="text-[10px] font-medium text-[#787774] bg-[#F7F6F3] px-2 py-0.5 rounded">
+              {recipe.cuisine}
+            </span>
+          )}
+          <span className={`text-[10px] font-medium px-2 py-0.5 rounded capitalize ${difficultyStyles[recipe.difficulty] || 'bg-[#F7F6F3] text-[#787774]'}`}>
+            {recipe.difficulty}
+          </span>
+          {recipe.mealTypes && recipe.mealTypes.slice(0, 2).map((type) => (
+            <span key={type} className={`text-[10px] font-medium px-2 py-0.5 rounded capitalize ${mealTypeStyles[type]}`}>
+              {type}
+            </span>
+          ))}
+        </div>
+
+        {/* Title */}
+        <h3 className="font-semibold text-[#37352F] mb-1 line-clamp-2">
           {recipe.name}
         </h3>
-        <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+
+        {/* Description */}
+        <p className="text-xs text-[#787774] mb-3 line-clamp-2 flex-1">
           {recipe.description || 'A delicious recipe to try!'}
         </p>
 
         {/* Stats */}
-        <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
+        <div className="flex items-center gap-3 text-xs text-[#787774] mb-3">
           <div className="flex items-center gap-1">
-            <Clock className="w-4 h-4" />
+            <Clock className="w-3.5 h-3.5" />
             <span>{totalTime} min</span>
           </div>
           <div className="flex items-center gap-1">
-            <Users className="w-4 h-4" />
-            <span>{recipe.servings} servings</span>
+            <Users className="w-3.5 h-3.5" />
+            <span>{recipe.servings}</span>
           </div>
         </div>
 
@@ -64,12 +91,12 @@ export default function RecipeCard({ recipe, onView, onDelete, canDelete }: Reci
         {recipe.tags && recipe.tags.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-3">
             {recipe.tags.slice(0, 3).map((tag, i) => (
-              <span key={i} className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-full">
+              <span key={i} className="text-[10px] px-2 py-0.5 bg-[#F7F6F3] text-[#787774] rounded">
                 {tag}
               </span>
             ))}
             {recipe.tags.length > 3 && (
-              <span className="text-xs px-2 py-1 bg-gray-100 text-gray-400 rounded-full">
+              <span className="text-[10px] px-2 py-0.5 bg-[#F7F6F3] text-[#9B9A97] rounded">
                 +{recipe.tags.length - 3}
               </span>
             )}
@@ -77,10 +104,9 @@ export default function RecipeCard({ recipe, onView, onDelete, canDelete }: Reci
         )}
 
         {/* Footer */}
-        <div className="flex justify-between items-center pt-3 border-t border-gray-100">
-          <div className="flex items-center gap-2 text-xs text-gray-400">
-            <ChefHat className="w-3 h-3" />
-            <span>{recipe.addedByUserName || 'Unknown'}</span>
+        <div className="flex justify-between items-center pt-3 border-t border-[#E9E9E7] mt-auto">
+          <div className="text-[10px] text-[#9B9A97]">
+            {recipe.addedByUserName || 'Unknown'}
           </div>
           {canDelete && onDelete && (
             <button
@@ -88,14 +114,14 @@ export default function RecipeCard({ recipe, onView, onDelete, canDelete }: Reci
                 e.stopPropagation();
                 onDelete(recipe.id);
               }}
-              className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+              className="p-1.5 text-[#9B9A97] hover:text-[#EB5757] hover:bg-[#FDEBEC] rounded transition-colors"
               title="Delete recipe"
             >
-              <Trash2 className="w-4 h-4" />
+              <Trash2 className="w-3.5 h-3.5" />
             </button>
           )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
