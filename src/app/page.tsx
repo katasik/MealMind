@@ -558,7 +558,7 @@ export default function HomePage() {
 
         {/* Status Badge */}
         {mealPlan && (
-          <div className="mb-4">
+          <div className="mb-4 flex items-center gap-2">
             <span
               className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
                 mealPlan.status === 'draft'
@@ -572,6 +572,14 @@ export default function HomePage() {
               {mealPlan.status === 'approved' && '✅ Approved'}
               {mealPlan.status === 'finalized' && '🎉 Ready'}
             </span>
+            <button
+              onClick={removePlan}
+              disabled={isRemoving}
+              className="inline-flex items-center gap-2 px-2.5 py-1 text-xs font-medium bg-white text-[#EB5757] border border-[#F5C2C7] rounded-full hover:bg-[#FDEBEC] transition-colors disabled:opacity-50"
+            >
+              {isRemoving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+              Remove
+            </button>
           </div>
         )}
 
