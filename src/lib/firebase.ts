@@ -26,7 +26,7 @@ import type {
   PlannedMeal,
   MealPlanShoppingList,
   MealPlanShoppingItem
-} from '@/types';
+} from '../types';
 
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY,
