@@ -147,9 +147,12 @@ export default function HomePage() {
       const data = await response.json();
       if (data.success) {
         setMealPlan(data.mealPlan);
+      } else {
+        setToast({ message: data.error || 'Failed to regenerate meal', type: 'error' });
       }
     } catch (error) {
       console.error('Error regenerating meal:', error);
+      setToast({ message: 'Failed to regenerate meal', type: 'error' });
     } finally {
       setRegeneratingMeal(null);
     }

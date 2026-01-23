@@ -50,7 +50,16 @@ export async function POST(request: NextRequest) {
     let existingPlan: MealPlan | null = null;
     if (regenerateMeal) {
       existingPlan = await firebaseService.getMealPlan(familyId, weekStartDate);
+      if (!existingPlan) {
+        return NextResponse.json(
+          { error: 'No existing meal plan found for this week to regenerate' },
+          { status: 404 }
+        );
+      }
     }
+
+    const generationDays = regenerateMeal ? 1 : numberOfDays;
+    const generationMeals = regenerateMeal ? [regenerateMeal.mealType] : mealsPerDay;
 
     // Generate meal plan using AI
     const days = await geminiService.generateWeeklyMealPlan({
@@ -58,8 +67,8 @@ export async function POST(request: NextRequest) {
       preferences,
       savedRecipes,
       weekStartDate,
-      numberOfDays,
-      mealsPerDay,
+      numberOfDays: generationDays,
+      mealsPerDay: generationMeals,
       regenerateMeal: regenerateMeal as { dayIndex: number; mealType: MealType } | undefined,
       existingPlan: existingPlan?.days
     });
