@@ -30,6 +30,26 @@ function getWeekStartDate(): string {
   return monday.toISOString().split('T')[0];
 }
 
+function getGenerationStartDate(baseWeekStartDate: string, days: number): string {
+  const currentWeekStart = getWeekStartDate();
+  if (baseWeekStartDate !== currentWeekStart) return baseWeekStartDate;
+
+  const today = new Date();
+  const todayStr = today.toISOString().split('T')[0];
+  const weekStart = new Date(baseWeekStartDate);
+  const daysSinceWeekStart = Math.floor(
+    (new Date(todayStr).getTime() - weekStart.getTime()) / (1000 * 60 * 60 * 24)
+  );
+
+  if (days <= daysSinceWeekStart + 1) {
+    const start = new Date(todayStr);
+    start.setDate(start.getDate() - (days - 1));
+    return start.toISOString().split('T')[0];
+  }
+
+  return baseWeekStartDate;
+}
+
 // Helper to format date range for display
 function formatDateRange(startDate: string, days: number): string {
   const start = new Date(startDate);
@@ -110,11 +130,12 @@ export default function HomePage() {
   const generatePlan = async () => {
     setIsGenerating(true);
     try {
+      const planStartDate = getGenerationStartDate(startDate, numberOfDays);
       const response = await fetch('/api/mealplans/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          weekStartDate: startDate,
+          weekStartDate: planStartDate,
           numberOfDays,
           mealsPerDay: selectedMeals
         })
@@ -123,6 +144,9 @@ export default function HomePage() {
       if (data.success) {
         setMealPlan(data.mealPlan);
         setShowSettings(false);
+        if (planStartDate !== startDate) {
+          setStartDate(planStartDate);
+        }
       }
     } catch (error) {
       console.error('Error generating meal plan:', error);
