@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { firebaseService } from '@/lib/firebase';
-import type { MealPlanShoppingList, MealPlanShoppingItem, Ingredient } from '@/types';
+import { firebaseService } from '../../../lib/firebase';
+import type { MealPlanShoppingList, MealPlanShoppingItem, Ingredient } from '../../../types';
 
 // Check if a week has ended (Sunday has passed)
 function isWeekExpired(weekStartDate: string): boolean {

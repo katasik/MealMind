@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { firebaseService } from '@/lib/firebase';
+import { firebaseService } from '../../../../lib/firebase';
 
 // POST - Send shopping list to Telegram
 export async function POST(request: NextRequest) {

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { geminiService } from '@/lib/gemini';
-import { firebaseService } from '@/lib/firebase';
-import type { MealPlan, MealType } from '@/types';
+import { geminiService } from '../../../../lib/gemini';
+import { firebaseService } from '../../../../lib/firebase';
+import type { MealPlan, MealType } from '../../../../types';
 
 // Helper to get start date (today by default)
 function getStartDate(): string {

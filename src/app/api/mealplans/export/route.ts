@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { firebaseService } from '@/lib/firebase';
-import type { MealPlan, PlannedMeal } from '@/types';
+import { firebaseService } from '../../../../lib/firebase';
+import type { MealPlan, PlannedMeal } from '../../../../types';
 
 // Helper: Format date for ICS (YYYYMMDD)
 function formatICSDate(dateStr: string): string {
