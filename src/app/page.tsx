@@ -141,7 +141,8 @@ export default function HomePage() {
           weekStartDate: startDate,
           numberOfDays,
           mealsPerDay: selectedMeals,
-          regenerateMeal: { dayIndex, mealType }
+          regenerateMeal: { dayIndex, mealType },
+          existingPlan: mealPlan
         })
       });
       const data = await response.json();

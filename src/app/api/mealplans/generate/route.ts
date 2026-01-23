@@ -19,7 +19,8 @@ export async function POST(request: NextRequest) {
       weekStartDate = getStartDate(),
       numberOfDays = 7,                                    // 1-7 days
       mealsPerDay = ['breakfast', 'lunch', 'dinner'] as MealType[],  // Which meals
-      regenerateMeal // Optional: { dayIndex: number, mealType: MealType }
+      regenerateMeal, // Optional: { dayIndex: number, mealType: MealType }
+      existingPlan: existingPlanFromBody // Optional: MealPlan from client
     } = body;
 
     console.log(`[MealPlan Generate] Starting for family ${familyId}, week ${weekStartDate}`);
@@ -47,15 +48,15 @@ export async function POST(request: NextRequest) {
     console.log(`[MealPlan Generate] Found ${savedRecipes.length} saved recipes`);
 
     // Check if there's an existing plan (for regeneration)
-    let existingPlan: MealPlan | null = null;
-    if (regenerateMeal) {
+    let existingPlan: MealPlan | null = existingPlanFromBody || null;
+    if (regenerateMeal && !existingPlan) {
       existingPlan = await firebaseService.getMealPlan(familyId, weekStartDate);
-      if (!existingPlan) {
-        return NextResponse.json(
-          { error: 'No existing meal plan found for this week to regenerate' },
-          { status: 404 }
-        );
-      }
+    }
+    if (regenerateMeal && !existingPlan) {
+      return NextResponse.json(
+        { error: 'No existing meal plan found for this week to regenerate' },
+        { status: 404 }
+      );
     }
 
     const generationDays = regenerateMeal ? 1 : numberOfDays;
@@ -66,7 +67,7 @@ export async function POST(request: NextRequest) {
       dietaryRestrictions: family.dietaryRestrictions || [],
       preferences,
       savedRecipes,
-      weekStartDate,
+      weekStartDate: existingPlan?.weekStartDate || weekStartDate,
       numberOfDays: generationDays,
       mealsPerDay: generationMeals,
       regenerateMeal: regenerateMeal as { dayIndex: number; mealType: MealType } | undefined,
@@ -77,9 +78,9 @@ export async function POST(request: NextRequest) {
     const mealPlan: MealPlan = {
       id: existingPlan?.id || `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
       familyId,
-      weekStartDate,
+      weekStartDate: existingPlan?.weekStartDate || weekStartDate,
       days,
-      status: 'draft',
+      status: existingPlan?.status || 'draft',
       createdAt: existingPlan?.createdAt || new Date(),
       updatedAt: new Date(),
       createdByUserId: existingPlan?.createdByUserId || userId,
