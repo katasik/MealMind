@@ -2,6 +2,26 @@ import { NextRequest, NextResponse } from 'next/server';
 import { firebaseService } from '@/lib/firebase';
 import type { MealPlanShoppingList, MealPlanShoppingItem, Ingredient } from '@/types';
 
+// Check if a week has ended (Sunday has passed)
+function isWeekExpired(weekStartDate: string): boolean {
+  const monday = new Date(weekStartDate);
+  // Week ends on Sunday (6 days after Monday)
+  const sunday = new Date(monday);
+  sunday.setDate(sunday.getDate() + 6);
+  sunday.setHours(23, 59, 59, 999);
+
+  return new Date() > sunday;
+}
+
+// Get current week's Monday date
+function getCurrentWeekStartDate(): string {
+  const today = new Date();
+  const day = today.getDay();
+  const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+  const monday = new Date(today.setDate(diff));
+  return monday.toISOString().split('T')[0];
+}
+
 // Ingredient category mapping
 const CATEGORY_KEYWORDS: Record<string, string[]> = {
   'Produce': ['tomato', 'lettuce', 'onion', 'garlic', 'pepper', 'carrot', 'celery', 'potato', 'apple', 'banana', 'lemon', 'lime', 'cucumber', 'spinach', 'broccoli', 'zucchini', 'mushroom', 'avocado', 'cilantro', 'parsley', 'basil', 'ginger', 'paradicsom', 'hagyma', 'fokhagyma', 'paprika', 'répa', 'burgonya', 'uborka', 'brokkoli', 'cukkini', 'gomba', 'spenót', 'saláta'],
@@ -199,6 +219,16 @@ export async function GET(request: NextRequest) {
     } else {
       // Get the active shopping list
       shoppingList = await firebaseService.getActiveMealPlanShoppingList(familyId);
+    }
+
+    // Auto-cleanup: if shopping list week has expired, mark as completed and return null
+    if (shoppingList && isWeekExpired(shoppingList.weekStartDate)) {
+      // Mark the expired list as completed
+      await firebaseService.updateMealPlanShoppingListStatus(shoppingList.id, 'completed');
+
+      // Try to get current week's shopping list instead
+      const currentWeek = getCurrentWeekStartDate();
+      shoppingList = await firebaseService.getMealPlanShoppingList(familyId, currentWeek);
     }
 
     return NextResponse.json({

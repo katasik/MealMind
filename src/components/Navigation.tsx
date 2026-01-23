@@ -2,22 +2,20 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { MessageSquare, BookOpen, Settings, CalendarDays, ShoppingCart } from 'lucide-react';
+import { BookOpen, Settings, CalendarDays } from 'lucide-react';
 
 export default function Navigation() {
   const pathname = usePathname();
 
   const links = [
-    { href: '/', label: 'Chat', icon: MessageSquare },
+    { href: '/', label: 'Meal Plan', icon: CalendarDays },
     { href: '/recipes', label: 'Recipes', icon: BookOpen },
-    { href: '/mealplan', label: 'Meal Plan', icon: CalendarDays },
-    { href: '/shopping', label: 'Shopping', icon: ShoppingCart },
     { href: '/settings', label: 'Settings', icon: Settings }
   ];
 
   return (
     <header className="bg-[#FBFBFA] border-b border-[#E9E9E7] sticky top-0 z-40">
-      <div className="max-w-5xl mx-auto px-6 py-3">
+      <div className="max-w-6xl mx-auto px-6 py-3">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
