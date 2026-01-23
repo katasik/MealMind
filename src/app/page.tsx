@@ -72,6 +72,7 @@ export default function HomePage() {
   const [showShoppingModal, setShowShoppingModal] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [isApproving, setIsApproving] = useState(false);
+  const [isRemoving, setIsRemoving] = useState(false);
   const [isFinalizing, setIsFinalizing] = useState(false);
   const [isSendingTelegram, setIsSendingTelegram] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
@@ -249,6 +250,31 @@ export default function HomePage() {
     }
   };
 
+  const removePlan = async () => {
+    if (!mealPlan) return;
+    if (!window.confirm('Remove this meal plan? This cannot be undone.')) return;
+    setIsRemoving(true);
+    try {
+      const response = await fetch(`/api/mealplans?planId=${mealPlan.id}`, {
+        method: 'DELETE'
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setMealPlan(null);
+        setShoppingList(null);
+        setShowShoppingModal(false);
+        setToast({ message: 'Meal plan removed.', type: 'success' });
+      } else {
+        setToast({ message: data.error || 'Failed to remove meal plan', type: 'error' });
+      }
+    } catch (error) {
+      console.error('Error removing plan:', error);
+      setToast({ message: 'Failed to remove meal plan', type: 'error' });
+    } finally {
+      setIsRemoving(false);
+    }
+  };
+
   const toggleShoppingItem = async (itemId: string, checked: boolean) => {
     if (!shoppingList) return;
     setShoppingList({
@@ -401,14 +427,24 @@ export default function HomePage() {
 
           {/* Action Buttons */}
           {mealPlan && mealPlan.status === 'draft' && (
-            <button
-              onClick={approvePlan}
-              disabled={isApproving}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm bg-[#2383E2] text-white rounded-md hover:bg-[#1B6EC2] transition-colors disabled:opacity-50"
-            >
-              {isApproving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-              Approve
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={approvePlan}
+                disabled={isApproving}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm bg-[#2383E2] text-white rounded-md hover:bg-[#1B6EC2] transition-colors disabled:opacity-50"
+              >
+                {isApproving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                Approve
+              </button>
+              <button
+                onClick={removePlan}
+                disabled={isRemoving}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm bg-white text-[#EB5757] border border-[#F5C2C7] rounded-md hover:bg-[#FDEBEC] transition-colors disabled:opacity-50"
+              >
+                {isRemoving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                Remove
+              </button>
+            </div>
           )}
 
           {mealPlan && (mealPlan.status === 'approved' || mealPlan.status === 'finalized') && (

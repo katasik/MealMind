@@ -81,31 +81,32 @@ export default function ShoppingListModal({
           />
 
           {/* Modal */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.98, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.98, y: 10 }}
-            transition={{ duration: 0.15 }}
-            className="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-lg md:max-h-[85vh] bg-[#FBFBFA] rounded-lg shadow-xl z-50 overflow-hidden flex flex-col border border-[#E9E9E7]"
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between p-5 border-b border-[#E9E9E7]">
-              <div className="flex items-center gap-3">
-                <div className="text-2xl">🛒</div>
-                <div>
-                  <h2 className="text-lg font-semibold text-[#37352F]">Shopping List</h2>
-                  <p className="text-sm text-[#787774]">
-                    Check off items you already have
-                  </p>
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.98, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.98, y: 10 }}
+              transition={{ duration: 0.15 }}
+              className="w-full max-w-lg max-h-[85vh] bg-[#FBFBFA] rounded-lg shadow-xl overflow-hidden flex flex-col border border-[#E9E9E7]"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between p-5 border-b border-[#E9E9E7]">
+                <div className="flex items-center gap-3">
+                  <div className="text-2xl">🛒</div>
+                  <div>
+                    <h2 className="text-lg font-semibold text-[#37352F]">Shopping List</h2>
+                    <p className="text-sm text-[#787774]">
+                      Check off items you already have
+                    </p>
+                  </div>
                 </div>
+                <button
+                  onClick={onClose}
+                  className="p-1.5 hover:bg-[#F7F6F3] rounded transition-colors"
+                >
+                  <X className="w-5 h-5 text-[#787774]" />
+                </button>
               </div>
-              <button
-                onClick={onClose}
-                className="p-1.5 hover:bg-[#F7F6F3] rounded transition-colors"
-              >
-                <X className="w-5 h-5 text-[#787774]" />
-              </button>
-            </div>
 
             {/* Progress Bar */}
             <div className="px-5 py-3 bg-[#F7F6F3] border-b border-[#E9E9E7]">
@@ -196,30 +197,31 @@ export default function ShoppingListModal({
               })}
             </div>
 
-            {/* Footer */}
-            <div className="p-4 border-t border-[#E9E9E7] space-y-2">
-              <button
-                onClick={onFinalize}
-                disabled={isLoading}
-                className="w-full py-2.5 bg-[#37352F] text-white rounded-md font-medium hover:bg-[#2F2D2A] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {isLoading ? (
-                  <span>Processing...</span>
-                ) : (
-                  <>
-                    <Check className="w-4 h-4" />
-                    <span>Finalize Plan ({remainingItems} items to buy)</span>
-                  </>
-                )}
-              </button>
-              <button
-                onClick={onClose}
-                className="w-full py-2 text-[#787774] hover:text-[#37352F] font-medium transition-colors"
-              >
-                Continue Editing
-              </button>
-            </div>
-          </motion.div>
+              {/* Footer */}
+              <div className="p-4 border-t border-[#E9E9E7] space-y-2">
+                <button
+                  onClick={onFinalize}
+                  disabled={isLoading}
+                  className="w-full py-2.5 bg-[#37352F] text-white rounded-md font-medium hover:bg-[#2F2D2A] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {isLoading ? (
+                    <span>Processing...</span>
+                  ) : (
+                    <>
+                      <Check className="w-4 h-4" />
+                      <span>Finalize Plan ({remainingItems} items to buy)</span>
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={onClose}
+                  className="w-full py-2 text-[#787774] hover:text-[#37352F] font-medium transition-colors"
+                >
+                  Continue Editing
+                </button>
+              </div>
+            </motion.div>
+          </div>
         </>
       )}
     </AnimatePresence>
