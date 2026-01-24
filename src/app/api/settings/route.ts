@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { firebaseService } from '@/lib/firebase';
-import type { DietaryRestriction, UserPreferences } from '@/types';
+import { firebaseService } from '../../../lib/firebase';
+import type { DietaryRestriction, UserPreferences } from '../../../types';
 
 // GET - Get user and family settings
 export async function GET(request: NextRequest) {

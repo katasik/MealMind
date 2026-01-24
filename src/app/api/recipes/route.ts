@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { firebaseService } from '@/lib/firebase';
+import { firebaseService } from '../../../lib/firebase';
 
 // GET - List all recipes for a family
 export async function GET(request: NextRequest) {

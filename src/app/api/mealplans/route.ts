@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { firebaseService } from '@/lib/firebase';
-import type { MealPlan, MealPlanStatus } from '@/types';
+import { firebaseService } from '../../../lib/firebase';
+import type { MealPlan, MealPlanStatus } from '../../../types';
 
 // Helper to get Monday of the current week
 function getWeekStartDate(date: Date = new Date()): string {

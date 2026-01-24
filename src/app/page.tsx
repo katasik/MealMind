@@ -30,6 +30,26 @@ function getWeekStartDate(): string {
   return monday.toISOString().split('T')[0];
 }
 
+function getGenerationStartDate(baseWeekStartDate: string, days: number): string {
+  const currentWeekStart = getWeekStartDate();
+  if (baseWeekStartDate !== currentWeekStart) return baseWeekStartDate;
+
+  const today = new Date();
+  const todayStr = today.toISOString().split('T')[0];
+  const weekStart = new Date(baseWeekStartDate);
+  const daysSinceWeekStart = Math.floor(
+    (new Date(todayStr).getTime() - weekStart.getTime()) / (1000 * 60 * 60 * 24)
+  );
+
+  if (days <= daysSinceWeekStart + 1) {
+    const start = new Date(todayStr);
+    start.setDate(start.getDate() - (days - 1));
+    return start.toISOString().split('T')[0];
+  }
+
+  return baseWeekStartDate;
+}
+
 // Helper to format date range for display
 function formatDateRange(startDate: string, days: number): string {
   const start = new Date(startDate);
@@ -72,6 +92,7 @@ export default function HomePage() {
   const [showShoppingModal, setShowShoppingModal] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [isApproving, setIsApproving] = useState(false);
+  const [isRemoving, setIsRemoving] = useState(false);
   const [isFinalizing, setIsFinalizing] = useState(false);
   const [isSendingTelegram, setIsSendingTelegram] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
@@ -109,11 +130,12 @@ export default function HomePage() {
   const generatePlan = async () => {
     setIsGenerating(true);
     try {
+      const planStartDate = getGenerationStartDate(startDate, numberOfDays);
       const response = await fetch('/api/mealplans/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          weekStartDate: startDate,
+          weekStartDate: planStartDate,
           numberOfDays,
           mealsPerDay: selectedMeals
         })
@@ -122,6 +144,9 @@ export default function HomePage() {
       if (data.success) {
         setMealPlan(data.mealPlan);
         setShowSettings(false);
+        if (planStartDate !== startDate) {
+          setStartDate(planStartDate);
+        }
       }
     } catch (error) {
       console.error('Error generating meal plan:', error);
@@ -140,15 +165,19 @@ export default function HomePage() {
           weekStartDate: startDate,
           numberOfDays,
           mealsPerDay: selectedMeals,
-          regenerateMeal: { dayIndex, mealType }
+          regenerateMeal: { dayIndex, mealType },
+          existingPlan: mealPlan
         })
       });
       const data = await response.json();
       if (data.success) {
         setMealPlan(data.mealPlan);
+      } else {
+        setToast({ message: data.error || 'Failed to regenerate meal', type: 'error' });
       }
     } catch (error) {
       console.error('Error regenerating meal:', error);
+      setToast({ message: 'Failed to regenerate meal', type: 'error' });
     } finally {
       setRegeneratingMeal(null);
     }
@@ -246,6 +275,31 @@ export default function HomePage() {
       console.error('Error approving plan:', error);
     } finally {
       setIsApproving(false);
+    }
+  };
+
+  const removePlan = async () => {
+    if (!mealPlan) return;
+    if (!window.confirm('Remove this meal plan? This cannot be undone.')) return;
+    setIsRemoving(true);
+    try {
+      const response = await fetch(`/api/mealplans?planId=${mealPlan.id}`, {
+        method: 'DELETE'
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setMealPlan(null);
+        setShoppingList(null);
+        setShowShoppingModal(false);
+        setToast({ message: 'Meal plan removed.', type: 'success' });
+      } else {
+        setToast({ message: data.error || 'Failed to remove meal plan', type: 'error' });
+      }
+    } catch (error) {
+      console.error('Error removing plan:', error);
+      setToast({ message: 'Failed to remove meal plan', type: 'error' });
+    } finally {
+      setIsRemoving(false);
     }
   };
 
@@ -401,14 +455,24 @@ export default function HomePage() {
 
           {/* Action Buttons */}
           {mealPlan && mealPlan.status === 'draft' && (
-            <button
-              onClick={approvePlan}
-              disabled={isApproving}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm bg-[#2383E2] text-white rounded-md hover:bg-[#1B6EC2] transition-colors disabled:opacity-50"
-            >
-              {isApproving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-              Approve
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={approvePlan}
+                disabled={isApproving}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm bg-[#2383E2] text-white rounded-md hover:bg-[#1B6EC2] transition-colors disabled:opacity-50"
+              >
+                {isApproving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                Approve
+              </button>
+              <button
+                onClick={removePlan}
+                disabled={isRemoving}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm bg-white text-[#EB5757] border border-[#F5C2C7] rounded-md hover:bg-[#FDEBEC] transition-colors disabled:opacity-50"
+              >
+                {isRemoving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                Remove
+              </button>
+            </div>
           )}
 
           {mealPlan && (mealPlan.status === 'approved' || mealPlan.status === 'finalized') && (
@@ -522,7 +586,7 @@ export default function HomePage() {
 
         {/* Status Badge */}
         {mealPlan && (
-          <div className="mb-4">
+          <div className="mb-4 flex items-center gap-2">
             <span
               className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
                 mealPlan.status === 'draft'
@@ -536,6 +600,14 @@ export default function HomePage() {
               {mealPlan.status === 'approved' && '✅ Approved'}
               {mealPlan.status === 'finalized' && '🎉 Ready'}
             </span>
+            <button
+              onClick={removePlan}
+              disabled={isRemoving}
+              className="inline-flex items-center gap-2 px-2.5 py-1 text-xs font-medium bg-white text-[#EB5757] border border-[#F5C2C7] rounded-full hover:bg-[#FDEBEC] transition-colors disabled:opacity-50"
+            >
+              {isRemoving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+              Remove
+            </button>
           </div>
         )}
 

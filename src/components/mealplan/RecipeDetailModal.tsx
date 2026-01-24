@@ -27,31 +27,32 @@ export default function RecipeDetailModal({ isOpen, onClose, meal }: RecipeDetai
           />
 
           {/* Modal */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.98, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.98, y: 10 }}
-            transition={{ duration: 0.15 }}
-            className="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-2xl md:max-h-[85vh] bg-[#FBFBFA] rounded-lg shadow-xl z-50 overflow-hidden flex flex-col border border-[#E9E9E7]"
-          >
-            {/* Header */}
-            <div className="flex items-start justify-between p-5 border-b border-[#E9E9E7]">
-              <div className="flex-1 pr-4">
-                <span className="text-xs font-medium text-[#787774] uppercase tracking-wide">
-                  {meal.mealType}
-                </span>
-                <h2 className="text-xl font-semibold text-[#37352F] mt-1">{meal.recipeName}</h2>
-                {meal.recipeDescription && (
-                  <p className="text-[#787774] text-sm mt-1">{meal.recipeDescription}</p>
-                )}
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.98, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.98, y: 10 }}
+              transition={{ duration: 0.15 }}
+              className="w-full max-w-2xl max-h-[85vh] bg-[#FBFBFA] rounded-lg shadow-xl overflow-hidden flex flex-col border border-[#E9E9E7]"
+            >
+              {/* Header */}
+              <div className="flex items-start justify-between p-5 border-b border-[#E9E9E7]">
+                <div className="flex-1 pr-4">
+                  <span className="text-xs font-medium text-[#787774] uppercase tracking-wide">
+                    {meal.mealType}
+                  </span>
+                  <h2 className="text-xl font-semibold text-[#37352F] mt-1">{meal.recipeName}</h2>
+                  {meal.recipeDescription && (
+                    <p className="text-[#787774] text-sm mt-1">{meal.recipeDescription}</p>
+                  )}
+                </div>
+                <button
+                  onClick={onClose}
+                  className="p-1.5 hover:bg-[#F7F6F3] rounded transition-colors"
+                >
+                  <X className="w-5 h-5 text-[#787774]" />
+                </button>
               </div>
-              <button
-                onClick={onClose}
-                className="p-1.5 hover:bg-[#F7F6F3] rounded transition-colors"
-              >
-                <X className="w-5 h-5 text-[#787774]" />
-              </button>
-            </div>
 
             {/* Meta Info */}
             <div className="flex items-center gap-4 px-5 py-3 bg-[#F7F6F3] border-b border-[#E9E9E7] text-sm">
@@ -121,16 +122,17 @@ export default function RecipeDetailModal({ isOpen, onClose, meal }: RecipeDetai
               </div>
             </div>
 
-            {/* Footer */}
-            <div className="p-4 border-t border-[#E9E9E7]">
-              <button
-                onClick={onClose}
-                className="w-full py-2.5 bg-[#37352F] text-white rounded-md font-medium hover:bg-[#2F2D2A] transition-colors"
-              >
-                Close
-              </button>
-            </div>
-          </motion.div>
+              {/* Footer */}
+              <div className="p-4 border-t border-[#E9E9E7]">
+                <button
+                  onClick={onClose}
+                  className="w-full py-2.5 bg-[#37352F] text-white rounded-md font-medium hover:bg-[#2F2D2A] transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </div>
         </>
       )}
     </AnimatePresence>
