@@ -1,21 +1,8 @@
 [build]
   command = "npm run build"
-  publish = ".next"
 
 [build.environment]
   NODE_VERSION = "18"
-  # Next.js requires these for proper function detection
-  NETLIFY_NEXT_PLUGIN_SKIP = "false"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
-
-[functions]
-  # Configure Node.js functions
-  node_bundler = "esbuild"
-
-[[redirects]]
-  from = "/*"
-  to = "/.netlify/functions/:splat"
-  status = 200
-  force = false
