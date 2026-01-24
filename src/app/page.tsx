@@ -14,6 +14,7 @@ import {
   Send
 } from 'lucide-react';
 import Navigation from '@/components/Navigation';
+import LandingPage from '@/components/LandingPage';
 import DayColumn from '@/components/mealplan/DayColumn';
 import RecipeDetailModal from '@/components/mealplan/RecipeDetailModal';
 import RecipeSelectModal from '@/components/mealplan/RecipeSelectModal';
@@ -79,6 +80,7 @@ const MEAL_OPTIONS: { value: MealType; label: string }[] = [
 const DAY_OPTIONS = [1, 2, 3, 4, 5, 6, 7];
 
 export default function HomePage() {
+  const [showLanding, setShowLanding] = useState(true);
   const [startDate, setStartDate] = useState(getWeekStartDate());
   const [numberOfDays, setNumberOfDays] = useState(7);
   const [selectedMeals, setSelectedMeals] = useState<MealType[]>(['dinner']);
@@ -101,10 +103,20 @@ export default function HomePage() {
   const [showRecipeSelectModal, setShowRecipeSelectModal] = useState(false);
   const [selectingMeal, setSelectingMeal] = useState<{ dayIndex: number; mealType: MealType } | null>(null);
 
+  // Check if user has visited before
+  useEffect(() => {
+    const hasVisited = localStorage.getItem('mealmind_has_visited');
+    if (hasVisited === 'true') {
+      setShowLanding(false);
+    }
+  }, []);
+
   // Fetch existing meal plan on load
   useEffect(() => {
-    fetchMealPlan();
-  }, [startDate]);
+    if (!showLanding) {
+      fetchMealPlan();
+    }
+  }, [startDate, showLanding]);
 
   const fetchMealPlan = async () => {
     setIsLoading(true);
@@ -400,6 +412,15 @@ export default function HomePage() {
         : [...prev, meal]
     );
   };
+
+  const handleGetStarted = () => {
+    localStorage.setItem('mealmind_has_visited', 'true');
+    setShowLanding(false);
+  };
+
+  if (showLanding) {
+    return <LandingPage onGetStarted={handleGetStarted} />;
+  }
 
   return (
     <div className="min-h-screen bg-[#FBFBFA]">

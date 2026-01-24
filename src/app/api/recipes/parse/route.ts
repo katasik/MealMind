@@ -250,10 +250,10 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Check file size (max 100MB for recipe books)
-      if (file.size > 100 * 1024 * 1024) {
+      // Check file size (max 5MB to ensure processing completes within serverless timeout limits)
+      if (file.size > 5 * 1024 * 1024) {
         return NextResponse.json(
-          { error: 'File too large. Maximum size is 100MB' },
+          { error: 'File too large. Maximum size is 5MB. For larger recipe books, please split them or extract individual recipes first.' },
           { status: 400 }
         );
       }

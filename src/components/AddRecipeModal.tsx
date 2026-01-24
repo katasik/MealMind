@@ -128,8 +128,8 @@ export default function AddRecipeModal({ isOpen, onClose, onSave }: AddRecipeMod
       return;
     }
 
-    if (file.size > 100 * 1024 * 1024) {
-      setError('File too large. Maximum size is 100MB');
+    if (file.size > 5 * 1024 * 1024) {
+      setError('File too large. Maximum size is 5MB. For larger recipe books, please split them or extract individual recipes first.');
       return;
     }
 

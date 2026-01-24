@@ -208,3 +208,6 @@ __marimo__/
 # Node / Next.js
 node_modules/
 .next/
+
+# Local Netlify folder
+.netlify
