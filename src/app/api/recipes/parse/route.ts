@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+import { model } from '@/lib/gemini';
 
 interface ParsedRecipe {
   name: string;
@@ -110,6 +107,8 @@ ${html.substring(0, 80000)}`; // Limit HTML size to avoid token limits
     const result = await model.generateContent(prompt);
     const response = result.response.text();
 
+    console.log('[Recipe Parse] Gemini response received for URL:', url);
+
     const cleanedResponse = response
       .replace(/```json\s*/g, '')
       .replace(/```\s*/g, '')
@@ -118,8 +117,11 @@ ${html.substring(0, 80000)}`; // Limit HTML size to avoid token limits
     const parsed = JSON.parse(cleanedResponse);
 
     if (parsed.error || !parsed.recipes || parsed.recipes.length === 0) {
+      console.log('[Recipe Parse] No recipes found in URL:', url);
       return [];
     }
+
+    console.log(`[Recipe Parse] Successfully extracted ${parsed.recipes.length} recipe(s) from URL`);
 
     // Add source URL to recipes
     return parsed.recipes.map((recipe: ParsedRecipe) => ({
@@ -127,8 +129,11 @@ ${html.substring(0, 80000)}`; // Limit HTML size to avoid token limits
       sourceUrl: url
     }));
   } catch (error) {
-    console.error('Error parsing recipe from URL:', error);
-    return [];
+    console.error('[Recipe Parse] Error parsing recipe from URL:', error);
+    if (error instanceof Error) {
+      console.error('[Recipe Parse] Error details:', error.message);
+    }
+    throw error; // Re-throw to provide more context to caller
   }
 }
 
@@ -149,8 +154,12 @@ Text:
 ${rawText}`;
 
   try {
+    console.log('[Recipe Parse] Sending text to Gemini (length: ' + rawText.length + ' chars)');
+
     const result = await model.generateContent(prompt);
     const response = result.response.text();
+
+    console.log('[Recipe Parse] Gemini response received for text');
 
     const cleanedResponse = response
       .replace(/```json\s*/g, '')
@@ -160,13 +169,18 @@ ${rawText}`;
     const parsed = JSON.parse(cleanedResponse);
 
     if (parsed.error || !parsed.recipes || parsed.recipes.length === 0) {
+      console.log('[Recipe Parse] No recipes found in text');
       return [];
     }
 
+    console.log(`[Recipe Parse] Successfully extracted ${parsed.recipes.length} recipe(s) from text`);
     return parsed.recipes;
   } catch (error) {
-    console.error('Error parsing recipe text:', error);
-    return [];
+    console.error('[Recipe Parse] Error parsing recipe text:', error);
+    if (error instanceof Error) {
+      console.error('[Recipe Parse] Error details:', error.message);
+    }
+    throw error; // Re-throw to provide more context to caller
   }
 }
 
@@ -175,6 +189,8 @@ async function parseRecipeFromPdf(pdfBuffer: Buffer): Promise<ParsedRecipe[]> {
   const base64Pdf = pdfBuffer.toString('base64');
 
   try {
+    console.log('[Recipe Parse] Sending PDF to Gemini (size: ' + Math.round(pdfBuffer.length / 1024) + 'KB)');
+
     const result = await model.generateContent([
       RECIPE_PARSE_PROMPT,
       {
@@ -186,6 +202,7 @@ async function parseRecipeFromPdf(pdfBuffer: Buffer): Promise<ParsedRecipe[]> {
     ]);
 
     const response = result.response.text();
+    console.log('[Recipe Parse] Gemini response received for PDF');
 
     const cleanedResponse = response
       .replace(/```json\s*/g, '')
@@ -195,13 +212,18 @@ async function parseRecipeFromPdf(pdfBuffer: Buffer): Promise<ParsedRecipe[]> {
     const parsed = JSON.parse(cleanedResponse);
 
     if (parsed.error || !parsed.recipes || parsed.recipes.length === 0) {
+      console.log('[Recipe Parse] No recipes found in PDF');
       return [];
     }
 
+    console.log(`[Recipe Parse] Successfully extracted ${parsed.recipes.length} recipe(s) from PDF`);
     return parsed.recipes;
   } catch (error) {
-    console.error('Error parsing PDF with Gemini:', error);
-    return [];
+    console.error('[Recipe Parse] Error parsing PDF with Gemini:', error);
+    if (error instanceof Error) {
+      console.error('[Recipe Parse] Error details:', error.message);
+    }
+    throw error; // Re-throw to provide more context to caller
   }
 }
 
@@ -240,19 +262,31 @@ export async function POST(request: NextRequest) {
       const buffer = Buffer.from(arrayBuffer);
 
       // Use Gemini's native PDF support
-      const recipes = await parseRecipeFromPdf(buffer);
+      try {
+        const recipes = await parseRecipeFromPdf(buffer);
 
-      if (recipes.length === 0) {
+        if (recipes.length === 0) {
+          return NextResponse.json(
+            { error: 'Could not identify any recipes in the PDF' },
+            { status: 400 }
+          );
+        }
+
+        return NextResponse.json({
+          recipes,
+          count: recipes.length
+        });
+      } catch (pdfError) {
+        console.error('[Recipe Parse API] PDF parsing failed:', pdfError);
+        const errorMessage = pdfError instanceof Error ? pdfError.message : 'Failed to parse PDF';
         return NextResponse.json(
-          { error: 'Could not identify any recipes in the PDF' },
+          {
+            error: errorMessage,
+            details: 'Check the console for more information or verify that the Gemini API key is correct and the model supports PDF input.'
+          },
           { status: 400 }
         );
       }
-
-      return NextResponse.json({
-        recipes,
-        count: recipes.length
-      });
     } else {
       // Handle JSON body (text paste or URL)
       const body = await request.json();
@@ -283,8 +317,13 @@ export async function POST(request: NextRequest) {
             source: 'url'
           });
         } catch (err) {
+          console.error('[Recipe Parse API] URL parsing failed:', err);
+          const errorMessage = err instanceof Error ? err.message : 'Failed to fetch recipe from URL';
           return NextResponse.json(
-            { error: err instanceof Error ? err.message : 'Failed to fetch recipe from URL' },
+            {
+              error: errorMessage,
+              details: 'Check the console for more information or verify that the Gemini API key is correct.'
+            },
             { status: 400 }
           );
         }
@@ -299,20 +338,32 @@ export async function POST(request: NextRequest) {
       }
 
       // Parse recipes from text
-      const recipes = await parseRecipeText(textToParse);
+      try {
+        const recipes = await parseRecipeText(textToParse);
 
-      if (recipes.length === 0) {
+        if (recipes.length === 0) {
+          return NextResponse.json(
+            { error: 'Could not identify any recipes in the provided text' },
+            { status: 400 }
+          );
+        }
+
+        return NextResponse.json({
+          recipes,
+          count: recipes.length,
+          source: 'text'
+        });
+      } catch (textError) {
+        console.error('[Recipe Parse API] Text parsing failed:', textError);
+        const errorMessage = textError instanceof Error ? textError.message : 'Failed to parse text';
         return NextResponse.json(
-          { error: 'Could not identify any recipes in the provided text' },
+          {
+            error: errorMessage,
+            details: 'Check the console for more information or verify that the Gemini API key is correct.'
+          },
           { status: 400 }
         );
       }
-
-      return NextResponse.json({
-        recipes,
-        count: recipes.length,
-        source: 'text'
-      });
     }
 
   } catch (error) {
