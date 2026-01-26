@@ -1,10 +1,12 @@
 'use client';
 
 import { Clock, RefreshCw, ChefHat, Utensils, BookOpen } from 'lucide-react';
+import { useDraggable } from '@dnd-kit/core';
 import type { PlannedMeal, MealType } from '@/types';
 
 interface MealCardProps {
   meal: PlannedMeal;
+  dayIndex: number;
   onRegenerateClick?: () => void;
   onSelectFromSaved?: () => void;
   onViewRecipe?: () => void;
@@ -29,6 +31,7 @@ const mealTypeLabels: Record<MealType, string> = {
 
 export default function MealCard({
   meal,
+  dayIndex,
   onRegenerateClick,
   onSelectFromSaved,
   onViewRecipe,
@@ -38,23 +41,53 @@ export default function MealCard({
   const colors = mealTypeColors[meal.mealType];
   const totalTime = meal.prepTime + meal.cookTime;
 
+  // Make this card draggable only if in draft mode
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: `${dayIndex}-${meal.mealType}`,
+    disabled: !isDraft,
+  });
+
+  const style = transform
+    ? {
+        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+      }
+    : undefined;
+
   return (
     <div
-      className="bg-white border border-[#E9E9E7] rounded-md overflow-hidden cursor-pointer hover:border-[#D3D3D0] hover:shadow-sm transition-all h-[200px] flex flex-col"
-      onClick={onViewRecipe}
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className={`bg-white border border-[#E9E9E7] rounded-md overflow-hidden hover:border-[#D3D3D0] hover:shadow-sm transition-all h-[200px] flex flex-col ${
+        isDraft ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
+      } ${isDragging ? 'opacity-50' : ''}`}
+      onClick={isDraft ? undefined : onViewRecipe}
     >
       {/* Image */}
       {meal.imageUrl ? (
-        <div className="h-[70px] w-full bg-[#F7F6F3] overflow-hidden flex-shrink-0">
+        <div
+          className="h-[70px] w-full bg-[#F7F6F3] overflow-hidden flex-shrink-0 cursor-pointer"
+          onClick={(e) => {
+            e.stopPropagation();
+            onViewRecipe?.();
+          }}
+        >
           <img
             src={meal.imageUrl}
             alt={meal.recipeName}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover pointer-events-none"
           />
         </div>
       ) : (
-        <div className="h-[70px] w-full bg-gradient-to-br from-[#F7F6F3] to-[#E9E9E7] flex items-center justify-center flex-shrink-0">
-          <span className="text-2xl opacity-50">🍽️</span>
+        <div
+          className="h-[70px] w-full bg-gradient-to-br from-[#F7F6F3] to-[#E9E9E7] flex items-center justify-center flex-shrink-0 cursor-pointer"
+          onClick={(e) => {
+            e.stopPropagation();
+            onViewRecipe?.();
+          }}
+        >
+          <span className="text-2xl opacity-50 pointer-events-none">🍽️</span>
         </div>
       )}
 
@@ -96,12 +129,24 @@ export default function MealCard({
         </div>
 
         {/* Recipe Name */}
-        <h4 className="font-medium text-[#37352F] text-sm leading-tight line-clamp-2 flex-shrink-0">
+        <h4
+          className="font-medium text-[#37352F] text-sm leading-tight line-clamp-2 flex-shrink-0 cursor-pointer hover:text-[#2383E2]"
+          onClick={(e) => {
+            e.stopPropagation();
+            onViewRecipe?.();
+          }}
+        >
           {meal.recipeName}
         </h4>
 
         {/* Description */}
-        <p className="text-[11px] text-[#787774] line-clamp-1 mt-1 flex-1">
+        <p
+          className="text-[11px] text-[#787774] line-clamp-1 mt-1 flex-1 cursor-pointer hover:text-[#37352F]"
+          onClick={(e) => {
+            e.stopPropagation();
+            onViewRecipe?.();
+          }}
+        >
           {meal.recipeDescription || 'A delicious meal'}
         </p>
 

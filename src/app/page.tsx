@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   ChevronLeft,
   ChevronRight,
@@ -10,9 +10,9 @@ import {
   Download,
   ShoppingCart,
   Loader2,
-  Settings2,
   Send
 } from 'lucide-react';
+import { DndContext, DragOverlay, closestCorners, DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import Navigation from '@/components/Navigation';
 import LandingPage from '@/components/LandingPage';
 import DayColumn from '@/components/mealplan/DayColumn';
@@ -92,7 +92,6 @@ export default function HomePage() {
   const [selectedMeal, setSelectedMeal] = useState<PlannedMeal | null>(null);
   const [showRecipeModal, setShowRecipeModal] = useState(false);
   const [showShoppingModal, setShowShoppingModal] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
   const [isApproving, setIsApproving] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
   const [isFinalizing, setIsFinalizing] = useState(false);
@@ -102,6 +101,9 @@ export default function HomePage() {
   // Recipe selection modal state
   const [showRecipeSelectModal, setShowRecipeSelectModal] = useState(false);
   const [selectingMeal, setSelectingMeal] = useState<{ dayIndex: number; mealType: MealType } | null>(null);
+
+  // Drag and drop state
+  const [activeDragMeal, setActiveDragMeal] = useState<PlannedMeal | null>(null);
 
   // Check if user has visited before
   useEffect(() => {
@@ -155,7 +157,6 @@ export default function HomePage() {
       const data = await response.json();
       if (data.success) {
         setMealPlan(data.mealPlan);
-        setShowSettings(false);
         if (planStartDate !== startDate) {
           setStartDate(planStartDate);
         }
@@ -396,6 +397,15 @@ export default function HomePage() {
     setStartDate(date.toISOString().split('T')[0]);
   };
 
+  const handleDateSelect = (selectedDate: string) => {
+    // Calculate Monday of the selected week
+    const date = new Date(selectedDate);
+    const day = date.getDay();
+    const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+    const monday = new Date(date.setDate(diff));
+    setStartDate(monday.toISOString().split('T')[0]);
+  };
+
   const viewRecipe = (dayIndex: number, mealType: MealType) => {
     if (!mealPlan) return;
     const meal = mealPlan.days[dayIndex]?.meals.find(m => m.mealType === mealType);
@@ -416,6 +426,84 @@ export default function HomePage() {
   const handleGetStarted = () => {
     localStorage.setItem('mealmind_has_visited', 'true');
     setShowLanding(false);
+  };
+
+  const handleDragStart = (event: DragStartEvent) => {
+    const { active } = event;
+    const [dayIndex, mealType] = (active.id as string).split('-');
+    const meal = mealPlan?.days[parseInt(dayIndex)]?.meals.find(m => m.mealType === mealType);
+    if (meal) {
+      setActiveDragMeal(meal);
+    }
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveDragMeal(null);
+
+    if (!over || !mealPlan) return;
+
+    const [sourceDayIndex, sourceMealType] = (active.id as string).split('-');
+    const [targetDayIndex] = (over.id as string).split('-');
+
+    const sourceDayIdx = parseInt(sourceDayIndex);
+    const targetDayIdx = parseInt(targetDayIndex);
+
+    // Don't do anything if dropped on the same day
+    if (sourceDayIdx === targetDayIdx) return;
+
+    // Find the meal being moved
+    const sourceMeal = mealPlan.days[sourceDayIdx]?.meals.find(m => m.mealType === sourceMealType);
+    if (!sourceMeal) return;
+
+    // Create updated days array
+    const updatedDays = mealPlan.days.map((day, idx) => {
+      if (idx === sourceDayIdx) {
+        // Remove meal from source day
+        return {
+          ...day,
+          meals: day.meals.filter(m => m.mealType !== sourceMealType)
+        };
+      } else if (idx === targetDayIdx) {
+        // Add or replace meal in target day
+        const existingMealIndex = day.meals.findIndex(m => m.mealType === sourceMealType);
+        if (existingMealIndex >= 0) {
+          // Replace existing meal of same type
+          return {
+            ...day,
+            meals: day.meals.map((m, i) => i === existingMealIndex ? sourceMeal : m)
+          };
+        } else {
+          // Add new meal
+          return {
+            ...day,
+            meals: [...day.meals, sourceMeal]
+          };
+        }
+      }
+      return day;
+    });
+
+    const updatedPlan = { ...mealPlan, days: updatedDays };
+    setMealPlan(updatedPlan);
+
+    // Save to backend
+    try {
+      await fetch('/api/mealplans', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          planId: mealPlan.id,
+          days: updatedDays
+        })
+      });
+      setToast({ message: 'Meal moved successfully!', type: 'success' });
+    } catch (error) {
+      console.error('Error moving meal:', error);
+      setToast({ message: 'Failed to move meal', type: 'error' });
+      // Revert on error
+      fetchMealPlan();
+    }
   };
 
   if (showLanding) {
@@ -458,19 +546,6 @@ export default function HomePage() {
               <ChevronRight className="w-4 h-4 text-[#787774]" />
             </button>
           </div>
-
-          {/* Settings Button */}
-          <button
-            onClick={() => setShowSettings(!showSettings)}
-            className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded-md border transition-colors ${
-              showSettings
-                ? 'bg-[#37352F] text-white border-[#37352F]'
-                : 'bg-white text-[#37352F] border-[#E9E9E7] hover:bg-[#F7F6F3]'
-            }`}
-          >
-            <Settings2 className="w-4 h-4" />
-            Settings
-          </button>
 
           <div className="flex-1" />
 
@@ -525,85 +600,90 @@ export default function HomePage() {
         </div>
 
         {/* Settings Panel - Notion style */}
-        <AnimatePresence>
-          {showSettings && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="overflow-hidden mb-6"
-            >
-              <div className="bg-white border border-[#E9E9E7] rounded-lg p-4">
-                <div className="grid md:grid-cols-2 gap-6">
-                  {/* Number of Days */}
-                  <div>
-                    <label className="block text-sm font-medium text-[#37352F] mb-2">
-                      Number of days
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      {DAY_OPTIONS.map(day => (
-                        <button
-                          key={day}
-                          onClick={() => setNumberOfDays(day)}
-                          className={`w-10 h-10 rounded-md text-sm font-medium transition-colors ${
-                            numberOfDays === day
-                              ? 'bg-[#37352F] text-white'
-                              : 'bg-[#F7F6F3] text-[#37352F] hover:bg-[#E9E9E7]'
-                          }`}
-                        >
-                          {day}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+        <div className="mb-6">
+          <div className="bg-white border border-[#E9E9E7] rounded-lg p-4">
+            <div className="grid md:grid-cols-3 gap-6">
+              {/* Start Date Picker */}
+              <div>
+                <label className="block text-sm font-medium text-[#37352F] mb-2">
+                  Start date
+                </label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => handleDateSelect(e.target.value)}
+                  className="w-full px-3 py-2 rounded-md border border-[#E9E9E7] text-sm text-[#37352F] bg-white hover:border-[#D3D3D0] focus:outline-none focus:ring-2 focus:ring-[#2383E2] focus:border-transparent transition-colors"
+                />
+                <p className="text-xs text-[#787774] mt-1">Week starts on Monday</p>
+              </div>
 
-                  {/* Meals to include */}
-                  <div>
-                    <label className="block text-sm font-medium text-[#37352F] mb-2">
-                      Meals to include
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      {MEAL_OPTIONS.map(option => (
-                        <button
-                          key={option.value}
-                          onClick={() => toggleMeal(option.value)}
-                          className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                            selectedMeals.includes(option.value)
-                              ? 'bg-[#37352F] text-white'
-                              : 'bg-[#F7F6F3] text-[#37352F] hover:bg-[#E9E9E7]'
-                          }`}
-                        >
-                          {option.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Generate Button */}
-                <div className="mt-4 pt-4 border-t border-[#E9E9E7]">
-                  <button
-                    onClick={generatePlan}
-                    disabled={isGenerating || selectedMeals.length === 0}
-                    className="flex items-center gap-2 px-4 py-2 bg-[#37352F] text-white rounded-md hover:bg-[#2F2D2A] transition-colors disabled:opacity-50"
-                  >
-                    {isGenerating ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Generating...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="w-4 h-4" />
-                        Generate {numberOfDays}-day plan
-                      </>
-                    )}
-                  </button>
+              {/* Number of Days */}
+              <div>
+                <label className="block text-sm font-medium text-[#37352F] mb-2">
+                  Number of days
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {DAY_OPTIONS.map(day => (
+                    <button
+                      key={day}
+                      onClick={() => setNumberOfDays(day)}
+                      className={`w-10 h-10 rounded-md text-sm font-medium transition-colors ${
+                        numberOfDays === day
+                          ? 'bg-[#37352F] text-white'
+                          : 'bg-[#F7F6F3] text-[#37352F] hover:bg-[#E9E9E7]'
+                      }`}
+                    >
+                      {day}
+                    </button>
+                  ))}
                 </div>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+
+              {/* Meals to include */}
+              <div>
+                <label className="block text-sm font-medium text-[#37352F] mb-2">
+                  Meals to include
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {MEAL_OPTIONS.map(option => (
+                    <button
+                      key={option.value}
+                      onClick={() => toggleMeal(option.value)}
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                        selectedMeals.includes(option.value)
+                          ? 'bg-[#37352F] text-white'
+                          : 'bg-[#F7F6F3] text-[#37352F] hover:bg-[#E9E9E7]'
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Generate Button */}
+            <div className="mt-4 pt-4 border-t border-[#E9E9E7]">
+              <button
+                onClick={generatePlan}
+                disabled={isGenerating || selectedMeals.length === 0}
+                className="flex items-center gap-2 px-4 py-2 bg-[#37352F] text-white rounded-md hover:bg-[#2F2D2A] transition-colors disabled:opacity-50"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4" />
+                    Generate {numberOfDays}-day plan
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
 
         {/* Status Badge */}
         {mealPlan && (
@@ -638,23 +718,37 @@ export default function HomePage() {
             <Loader2 className="w-6 h-6 text-[#787774] animate-spin" />
           </div>
         ) : mealPlan ? (
-          <div className="overflow-x-auto pb-4">
-            <div className="flex gap-3 min-w-max">
-              {mealPlan.days.map((day, index) => (
-                <DayColumn
-                  key={day.date}
-                  day={day}
-                  dayIndex={index}
-                  isToday={isToday(day.date)}
-                  isDraft={mealPlan.status === 'draft'}
-                  onRegenerateMeal={regenerateMeal}
-                  onSelectFromSaved={openRecipeSelector}
-                  onViewRecipe={viewRecipe}
-                  regeneratingMeal={regeneratingMeal}
-                />
-              ))}
+          <DndContext
+            collisionDetection={closestCorners}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
+            <div className="overflow-x-auto pb-4">
+              <div className="flex gap-3 min-w-max">
+                {mealPlan.days.map((day, index) => (
+                  <DayColumn
+                    key={day.date}
+                    day={day}
+                    dayIndex={index}
+                    isToday={isToday(day.date)}
+                    isDraft={mealPlan.status === 'draft'}
+                    onRegenerateMeal={regenerateMeal}
+                    onSelectFromSaved={openRecipeSelector}
+                    onViewRecipe={viewRecipe}
+                    regeneratingMeal={regeneratingMeal}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
+            <DragOverlay>
+              {activeDragMeal ? (
+                <div className="bg-white border-2 border-[#2383E2] rounded-md p-3 shadow-lg opacity-90 w-[220px]">
+                  <div className="font-medium text-sm text-[#37352F]">{activeDragMeal.recipeName}</div>
+                  <div className="text-xs text-[#787774] mt-1">{activeDragMeal.recipeDescription}</div>
+                </div>
+              ) : null}
+            </DragOverlay>
+          </DndContext>
         ) : (
           /* Empty State - Notion style */
           <motion.div
@@ -666,16 +760,9 @@ export default function HomePage() {
             <h2 className="text-xl font-semibold text-[#37352F] mb-2">
               No meal plan yet
             </h2>
-            <p className="text-[#787774] mb-6 max-w-md mx-auto">
+            <p className="text-[#787774] max-w-md mx-auto">
               Configure your preferences above and generate a personalized meal plan.
             </p>
-            <button
-              onClick={() => setShowSettings(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-[#37352F] text-white rounded-md hover:bg-[#2F2D2A] transition-colors"
-            >
-              <Settings2 className="w-4 h-4" />
-              Open Settings
-            </button>
           </motion.div>
         )}
 

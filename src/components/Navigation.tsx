@@ -8,8 +8,8 @@ export default function Navigation() {
   const pathname = usePathname();
 
   const links = [
-    { href: '/', label: 'Meal Plan', icon: CalendarDays },
     { href: '/recipes', label: 'Recipes', icon: BookOpen },
+    { href: '/', label: 'Meal Plan', icon: CalendarDays },
     { href: '/settings', label: 'Settings', icon: Settings }
   ];
 

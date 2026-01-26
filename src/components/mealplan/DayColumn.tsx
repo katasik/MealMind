@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { useDroppable } from '@dnd-kit/core';
 import type { DayPlan, MealType } from '@/types';
 import MealCard from './MealCard';
 
@@ -36,14 +37,20 @@ export default function DayColumn({
     (a, b) => mealOrder.indexOf(a.mealType) - mealOrder.indexOf(b.mealType)
   );
 
+  // Make this column droppable
+  const { setNodeRef, isOver } = useDroppable({
+    id: `${dayIndex}-day`,
+  });
+
   return (
     <motion.div
+      ref={setNodeRef}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: dayIndex * 0.05 }}
       className={`flex flex-col w-[220px] flex-shrink-0 ${
         isToday ? 'ring-2 ring-[#2383E2] ring-offset-2' : ''
-      } bg-white rounded-lg border border-[#E9E9E7] overflow-hidden`}
+      } ${isOver && isDraft ? 'ring-2 ring-[#10B981] ring-offset-2' : ''} bg-white rounded-lg border border-[#E9E9E7] overflow-hidden`}
     >
       {/* Day Header - Notion style */}
       <div className={`px-3 py-2.5 text-center border-b border-[#E9E9E7] ${
@@ -64,6 +71,7 @@ export default function DayColumn({
             <MealCard
               key={`${day.date}-${meal.mealType}`}
               meal={meal}
+              dayIndex={dayIndex}
               isDraft={isDraft}
               isRegenerating={
                 regeneratingMeal?.dayIndex === dayIndex &&

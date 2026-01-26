@@ -1,22 +1,29 @@
-# MealMind - AI-Powered Weekly Meal Planning
+# MealMind - Stop Stressing About What's for Dinner
 
-**Stop stressing about what's for dinner.** MealMind is an AI-powered meal planning assistant that creates personalized weekly meal plans for families with dietary restrictions.
+**Decision fatigue is over. Eat better, save money, and get your time back.**
+
+MealMind is an AI-powered meal planning assistant that helps families eliminate the daily "what's for dinner?" stress. Build your recipe library from trusted sources, let AI create personalized weekly plans, and get automatic shopping lists—all while respecting dietary restrictions.
 
 ## The Problem
 
-- **Decision fatigue**: Average Americans make 226 food decisions daily
-- **Dietary coordination**: 32M Americans have food allergies, making family meal planning complex
-- **Expensive defaults**: Decision fatigue leads to costly takeout orders
-- **Safety concerns**: Managing multiple dietary restrictions is stressful and risky
+Every evening, the same question: "What should we make for dinner?"
+
+- **Decision fatigue**: Planning meals daily is mentally exhausting
+- **Unhealthy defaults**: No plan means ordering expensive takeout or eating whatever's at home
+- **Money wasted**: Frequent takeout and inefficient grocery shopping add up fast
+- **Ad-hoc ingredient shopping**: Getting what you need on the spot is difficult and time-consuming
+- **Dietary concerns**: Managing food allergies and restrictions adds complexity and stress
 
 ## The Solution
 
-MealMind provides:
-- **AI-generated weekly meal plans** tailored to your dietary needs
-- **Smart recipe management** - save recipes from URLs or PDFs
-- **Automatic shopping lists** organized by category
-- **Calendar export** with full recipe details
-- **Telegram integration** for on-the-go access
+Plan once, eat all week. MealMind provides:
+
+- **AI-generated weekly meal plans** using recipes you already trust and love
+- **Recipe library** - Import from URLs, PDFs, or upload entire recipe books
+- **Smart shopping lists** - Auto-generated with what you need, organized by category
+- **Calendar export** - Share with family so everyone knows what's for dinner
+- **Telegram integration** - Shopping reminders and AI Q&A on the go
+- **Dietary safety** - Respects all allergies and restrictions automatically
 
 ## Key Features
 
@@ -28,10 +35,12 @@ MealMind provides:
 - Approve plan to generate shopping list
 
 ### Recipe Knowledge Base
-- Import recipes from any URL
-- Upload PDF cookbooks
-- Add recipes manually
-- View recipe images, ingredients, and instructions
+- Import recipes from any URL (AI extracts structured data)
+- Upload PDF cookbooks (up to 5MB for fast processing)
+- Paste recipe text manually
+- Upload entire recipe books - AI extracts all recipes automatically
+- View recipe images, ingredients, and step-by-step instructions
+- Only use recipes you trust and love
 
 ### Smart Shopping List
 - Auto-generated from approved meal plans
@@ -41,10 +50,16 @@ MealMind provides:
 - Auto-clears when the week ends
 
 ### Telegram Bot
-- Ask "What's for dinner tonight?"
-- View your shopping list
-- Get AI-powered answers about ingredients
+- Ask "What's for dinner tonight?" while shopping
+- View your shopping list on mobile
+- Get AI-powered answers about ingredients and recipes
+- Add recipes to your library from Telegram
 - Commands: `/today`, `/week`, `/list`
+
+### Landing Experience
+- First-time visitors see a compelling landing page explaining the value
+- Returning users skip directly to their meal planner
+- Clear walkthrough of how MealMind saves time, money, and stress
 
 ## Quick Start
 
@@ -87,21 +102,24 @@ Visit http://localhost:3000
 mealmind/
 ├── src/
 │   ├── app/                    # Next.js App Router
-│   │   ├── page.tsx           # Meal Planner (home)
+│   │   ├── page.tsx           # Meal Planner (home) with landing page
 │   │   ├── recipes/           # Recipe library
 │   │   ├── settings/          # User preferences
 │   │   └── api/               # API routes
 │   │       ├── mealplans/     # Meal plan CRUD & generation
-│   │       ├── recipes/       # Recipe CRUD & URL parsing
+│   │       ├── recipes/       # Recipe CRUD & URL/PDF parsing
 │   │       ├── shopping/      # Shopping list management
 │   │       └── telegram/      # Telegram webhook
 │   ├── components/            # React components
 │   │   ├── mealplan/         # Meal planner components
+│   │   ├── LandingPage.tsx   # First-visit landing page
 │   │   ├── Navigation.tsx    # App navigation
 │   │   ├── RecipeCard.tsx    # Recipe card display
 │   │   ├── RecipeDetailModal.tsx
 │   │   ├── AddRecipeModal.tsx
 │   │   └── Toast.tsx         # Notification toasts
+│   ├── bot/                   # Telegram bot (can run standalone)
+│   │   └── index.ts          # Bot implementation
 │   ├── lib/                   # Core services
 │   │   ├── gemini.ts         # Gemini AI integration
 │   │   └── firebase.ts       # Database operations
@@ -114,10 +132,10 @@ mealmind/
 ## Tech Stack
 
 - **Frontend**: Next.js 14, React, TailwindCSS, Framer Motion
-- **AI**: Google Gemini 2.5 Flash Lite
-- **Database**: Firebase Firestore
+- **AI**: Google Gemini 2.5 Flash (with native PDF support)
+- **Database**: Firebase Firestore (optional - app works with mock data)
 - **Messaging**: Telegram Bot API
-- **Deployment**: Netlify
+- **Deployment**: Netlify with serverless functions
 
 ## Deployment (Netlify)
 
@@ -148,11 +166,13 @@ mealmind/
 
 ## How It Works
 
-### AI Components (Gemini)
-- **Meal plan generation**: Creates 7-day plans respecting dietary restrictions
-- **Single meal regeneration**: Suggests alternatives for specific meals
-- **Recipe parsing**: Extracts structured data from recipe URLs
-- **Telegram Q&A**: Answers natural language questions about meals
+### AI Components (Gemini 2.5 Flash)
+- **Meal plan generation**: Creates 1-7 day plans respecting dietary restrictions
+- **Single meal regeneration**: Suggests alternatives for specific meals you don't like
+- **Recipe parsing**: Extracts structured data from URLs, PDFs (up to 5MB), and pasted text
+- **PDF cookbook processing**: Uses Gemini's native PDF support to extract multiple recipes
+- **Dietary safety evaluation**: Validates recipes against user restrictions
+- **Telegram Q&A**: Answers natural language questions about meals and ingredients
 
 ### Deterministic Components
 - Shopping list aggregation and categorization
@@ -169,7 +189,7 @@ mealmind/
 | `/api/mealplans/generate` | POST | Generate AI meal plan |
 | `/api/mealplans/export` | GET | Export to ICS calendar |
 | `/api/recipes` | GET/POST/DELETE | Recipe CRUD |
-| `/api/recipes/parse` | POST | Parse recipe from URL |
+| `/api/recipes/parse` | POST | Parse recipe from URL/PDF/text |
 | `/api/shopping` | GET/POST/PUT | Shopping list operations |
 | `/api/shopping/telegram` | POST | Send list to Telegram |
 | `/api/telegram/webhook` | POST | Telegram bot webhook |
@@ -178,6 +198,19 @@ mealmind/
 ## License
 
 MIT License
+
+## Evaluation & Quality (Opik Integration - Planned)
+
+MealMind includes plans for comprehensive LLM evaluation using Opik:
+
+1. **Recipe Extraction Quality**: Dual LLM-as-judge validates parsing accuracy
+2. **Shopping List Completeness**: Ensures no missing ingredients
+3. **Dietary Compliance**: Validates all recipes respect restrictions
+4. **Ingredient Substitution**: Evaluates quality of dietary swaps
+5. **Recipe Versatility**: Measures meal plan diversity and "wow factor"
+6. **Nutritional Balance**: Tracks macro/micronutrient distribution
+
+See [REPOSITORY_REVIEW.md](REPOSITORY_REVIEW.md) for full evaluation implementation plan.
 
 ---
 

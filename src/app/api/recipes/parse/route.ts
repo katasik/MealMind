@@ -108,13 +108,21 @@ ${html.substring(0, 80000)}`; // Limit HTML size to avoid token limits
     const response = result.response.text();
 
     console.log('[Recipe Parse] Gemini response received for URL:', url);
+    console.log('[Recipe Parse] Response preview:', response.substring(0, 500));
 
     const cleanedResponse = response
       .replace(/```json\s*/g, '')
       .replace(/```\s*/g, '')
       .trim();
 
-    const parsed = JSON.parse(cleanedResponse);
+    let parsed;
+    try {
+      parsed = JSON.parse(cleanedResponse);
+    } catch (jsonError) {
+      console.error('[Recipe Parse] JSON parse error:', jsonError);
+      console.error('[Recipe Parse] Cleaned response:', cleanedResponse.substring(0, 1000));
+      throw new Error('AI returned invalid JSON. The recipe page might not be accessible or formatted correctly.');
+    }
 
     if (parsed.error || !parsed.recipes || parsed.recipes.length === 0) {
       console.log('[Recipe Parse] No recipes found in URL:', url);
@@ -132,6 +140,10 @@ ${html.substring(0, 80000)}`; // Limit HTML size to avoid token limits
     console.error('[Recipe Parse] Error parsing recipe from URL:', error);
     if (error instanceof Error) {
       console.error('[Recipe Parse] Error details:', error.message);
+      // Provide more helpful error message
+      if (error.message.includes('blocked') || error.message.includes('pattern')) {
+        throw new Error('Unable to access this URL. The website might be blocking automated access or the URL format is invalid.');
+      }
     }
     throw error; // Re-throw to provide more context to caller
   }
@@ -160,13 +172,21 @@ ${rawText}`;
     const response = result.response.text();
 
     console.log('[Recipe Parse] Gemini response received for text');
+    console.log('[Recipe Parse] Response preview:', response.substring(0, 500));
 
     const cleanedResponse = response
       .replace(/```json\s*/g, '')
       .replace(/```\s*/g, '')
       .trim();
 
-    const parsed = JSON.parse(cleanedResponse);
+    let parsed;
+    try {
+      parsed = JSON.parse(cleanedResponse);
+    } catch (jsonError) {
+      console.error('[Recipe Parse] JSON parse error:', jsonError);
+      console.error('[Recipe Parse] Cleaned response:', cleanedResponse.substring(0, 1000));
+      throw new Error('AI returned invalid response. The text might not contain a valid recipe.');
+    }
 
     if (parsed.error || !parsed.recipes || parsed.recipes.length === 0) {
       console.log('[Recipe Parse] No recipes found in text');
@@ -179,6 +199,10 @@ ${rawText}`;
     console.error('[Recipe Parse] Error parsing recipe text:', error);
     if (error instanceof Error) {
       console.error('[Recipe Parse] Error details:', error.message);
+      // Provide more helpful error message
+      if (error.message.includes('blocked') || error.message.includes('pattern')) {
+        throw new Error('Unable to process this text. Please ensure it contains a valid recipe with ingredients and instructions.');
+      }
     }
     throw error; // Re-throw to provide more context to caller
   }
@@ -203,13 +227,21 @@ async function parseRecipeFromPdf(pdfBuffer: Buffer): Promise<ParsedRecipe[]> {
 
     const response = result.response.text();
     console.log('[Recipe Parse] Gemini response received for PDF');
+    console.log('[Recipe Parse] Response preview:', response.substring(0, 500));
 
     const cleanedResponse = response
       .replace(/```json\s*/g, '')
       .replace(/```\s*/g, '')
       .trim();
 
-    const parsed = JSON.parse(cleanedResponse);
+    let parsed;
+    try {
+      parsed = JSON.parse(cleanedResponse);
+    } catch (jsonError) {
+      console.error('[Recipe Parse] JSON parse error:', jsonError);
+      console.error('[Recipe Parse] Cleaned response:', cleanedResponse.substring(0, 1000));
+      throw new Error('AI returned invalid response. The PDF might be corrupted, image-based, or not contain readable recipes.');
+    }
 
     if (parsed.error || !parsed.recipes || parsed.recipes.length === 0) {
       console.log('[Recipe Parse] No recipes found in PDF');
@@ -222,6 +254,10 @@ async function parseRecipeFromPdf(pdfBuffer: Buffer): Promise<ParsedRecipe[]> {
     console.error('[Recipe Parse] Error parsing PDF with Gemini:', error);
     if (error instanceof Error) {
       console.error('[Recipe Parse] Error details:', error.message);
+      // Provide more helpful error message
+      if (error.message.includes('blocked') || error.message.includes('pattern')) {
+        throw new Error('Unable to process this PDF. It might be image-based (scanned) or contain unsupported formatting.');
+      }
     }
     throw error; // Re-throw to provide more context to caller
   }
