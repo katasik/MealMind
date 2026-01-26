@@ -124,7 +124,6 @@ mealmind/
 │   │   ├── gemini.ts         # Gemini AI integration
 │   │   └── firebase.ts       # Database operations
 │   └── types/                 # TypeScript definitions
-├── netlify.toml              # Netlify deployment config
 ├── package.json
 └── README.md
 ```
@@ -135,17 +134,17 @@ mealmind/
 - **AI**: Google Gemini 2.5 Flash (with native PDF support)
 - **Database**: Firebase Firestore (optional - app works with mock data)
 - **Messaging**: Telegram Bot API
-- **Deployment**: Netlify with serverless functions
+- **Deployment**: Vercel with serverless functions
 
-## Deployment (Netlify)
+## Deployment (Vercel)
 
 1. **Push to GitHub**
 
-2. **Connect to Netlify**
-   - Go to netlify.com → "Add new site" → "Import an existing project"
+2. **Connect to Vercel**
+   - Go to vercel.com → "Add New Project" → "Import Git Repository"
    - Select your GitHub repo
 
-3. **Set environment variables** in Netlify dashboard:
+3. **Set environment variables** in Vercel dashboard:
    ```
    GEMINI_API_KEY=your_key
    TELEGRAM_BOT_TOKEN=your_token
@@ -157,11 +156,11 @@ mealmind/
    FIREBASE_APP_ID=your_app_id
    ```
 
-4. **Deploy** - Netlify auto-detects Next.js
+4. **Deploy** - Vercel auto-detects Next.js
 
 5. **Set Telegram webhook** (after deploy):
    ```
-   https://api.telegram.org/bot<TOKEN>/setWebhook?url=https://your-site.netlify.app/api/telegram/webhook
+   https://api.telegram.org/bot<TOKEN>/setWebhook?url=https://your-site.vercel.app/api/telegram/webhook
    ```
 
 ## How It Works
