@@ -2,12 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BookOpen, Settings, CalendarDays } from 'lucide-react';
+import { BookOpen, Settings, CalendarDays, Home } from 'lucide-react';
 
 export default function Navigation() {
   const pathname = usePathname();
 
   const links = [
+    { href: '/home', label: 'Home', icon: Home },
     { href: '/recipes', label: 'Recipes', icon: BookOpen },
     { href: '/', label: 'Meal Plan', icon: CalendarDays },
     { href: '/settings', label: 'Settings', icon: Settings }
