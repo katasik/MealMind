@@ -96,6 +96,60 @@ npm run dev
 
 Visit http://localhost:3000
 
+## Telegram Bot Setup (Optional)
+
+To enable Telegram integration for shopping lists and meal plan notifications:
+
+### 1. Create Your Bot
+
+1. Open Telegram and message [@BotFather](https://t.me/BotFather)
+2. Send the command: `/newbot`
+3. Follow the prompts:
+   - Choose a display name (e.g., "MealMind Helper")
+   - Choose a username ending in "bot" (e.g., "mealmind_assistant_bot")
+4. BotFather will respond with your bot token (looks like `123456789:ABCdefGhIjKlmNoPQRsTuVwXyz`)
+5. **Save this token** - you'll need it for the next steps
+
+### 2. Configure the Bot
+
+**For Local Development:**
+```bash
+# Add to your .env file
+TELEGRAM_BOT_TOKEN=your_bot_token_from_botfather
+```
+
+**For Production (Vercel):**
+1. Go to your Vercel project dashboard
+2. Navigate to Settings → Environment Variables
+3. Add: `TELEGRAM_BOT_TOKEN` = `your_bot_token_from_botfather`
+4. Redeploy your application
+
+### 3. Set the Webhook
+
+After deploying to Vercel, set the webhook URL so Telegram knows where to send messages:
+
+```bash
+curl "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/setWebhook?url=https://your-site.vercel.app/api/telegram/webhook"
+```
+
+Replace:
+- `<YOUR_BOT_TOKEN>` with your actual bot token
+- `your-site.vercel.app` with your Vercel deployment URL
+
+You should receive a response: `{"ok":true,"result":true,"description":"Webhook was set"}`
+
+### 4. Start Using Your Bot
+
+1. Find your bot on Telegram by searching for its username
+2. Start a chat with `/start`
+3. Try commands:
+   - `/today` - See today's meal
+   - `/week` - View full week plan
+   - `/list` - Get shopping list
+   - Ask questions: "What's for dinner?" or "Do I need eggs?"
+
+**Note:** The bot requires an approved meal plan to function. Generate and approve a meal plan in the web app first.
+
 ## Architecture
 
 ```
@@ -158,10 +212,7 @@ mealmind/
 
 4. **Deploy** - Vercel auto-detects Next.js
 
-5. **Set Telegram webhook** (after deploy):
-   ```
-   https://api.telegram.org/bot<TOKEN>/setWebhook?url=https://your-site.vercel.app/api/telegram/webhook
-   ```
+5. **(Optional) Set up Telegram bot** - See [Telegram Bot Setup](#telegram-bot-setup-optional) section above
 
 ## How It Works
 
