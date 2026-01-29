@@ -8,10 +8,26 @@
  * - Building evaluation datasets
  * - Monitoring model performance
  *
+ * Environment Variables (see .env.example):
+ * - OPIK_API_KEY: Your Opik API key from Comet
+ * - OPIK_WORKSPACE: Your Opik workspace name
+ * - OPIK_PROJECT_NAME: Project name for MealMind traces (default: "mealmind")
+ *
  * To enable Opik:
  * 1. Install: npm install opik
- * 2. Set environment variable: OPIK_API_KEY=your-api-key
- * 3. Initialize Opik in your app entry point
+ * 2. Set environment variables in .env
+ * 3. Uncomment the Opik initialization below
+ *
+ * Example Opik initialization (uncomment when ready):
+ * ```
+ * import Opik from 'opik';
+ *
+ * const opik = new Opik({
+ *   apiKey: process.env.OPIK_API_KEY,
+ *   workspace: process.env.OPIK_WORKSPACE,
+ *   projectName: process.env.OPIK_PROJECT_NAME || 'mealmind'
+ * });
+ * ```
  */
 
 import type {
