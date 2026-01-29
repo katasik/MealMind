@@ -22,17 +22,17 @@ function getCurrentWeekStartDate(): string {
   return monday.toISOString().split('T')[0];
 }
 
-// Ingredient category mapping
+// Ingredient category mapping (English keywords - recipes are now translated at AI level)
 const CATEGORY_KEYWORDS: Record<string, string[]> = {
-  'Produce': ['tomato', 'lettuce', 'onion', 'garlic', 'pepper', 'carrot', 'celery', 'potato', 'apple', 'banana', 'lemon', 'lime', 'cucumber', 'spinach', 'broccoli', 'zucchini', 'mushroom', 'avocado', 'cilantro', 'parsley', 'basil', 'ginger', 'paradicsom', 'hagyma', 'fokhagyma', 'paprika', 'répa', 'burgonya', 'uborka', 'brokkoli', 'cukkini', 'gomba', 'spenót', 'saláta'],
-  'Meat & Seafood': ['chicken', 'beef', 'pork', 'fish', 'shrimp', 'salmon', 'turkey', 'bacon', 'ham', 'sausage', 'lamb', 'tuna', 'csirke', 'marha', 'sertés', 'hal', 'sonka', 'szalonna', 'kolbász'],
-  'Dairy': ['milk', 'cheese', 'yogurt', 'butter', 'cream', 'egg', 'tej', 'sajt', 'joghurt', 'vaj', 'tejföl', 'tojás', 'túró'],
-  'Grains & Pasta': ['rice', 'pasta', 'bread', 'flour', 'oats', 'quinoa', 'noodle', 'tortilla', 'rizs', 'tészta', 'kenyér', 'liszt', 'zabpehely'],
-  'Pantry': ['oil', 'salt', 'pepper', 'sugar', 'vinegar', 'soy sauce', 'honey', 'mustard', 'ketchup', 'mayo', 'olaj', 'ecet', 'szójaszósz', 'méz', 'cukor'],
-  'Spices': ['cumin', 'paprika', 'oregano', 'thyme', 'cinnamon', 'turmeric', 'curry', 'chili', 'köménymag', 'oregánó', 'kakukkfű', 'fahéj'],
-  'Canned & Jarred': ['beans', 'tomato sauce', 'coconut milk', 'broth', 'stock', 'bab', 'paradicsomos', 'kókusztej', 'húsleves'],
-  'Frozen': ['frozen', 'fagyasztott'],
-  'Beverages': ['juice', 'soda', 'coffee', 'tea', 'gyümölcslé', 'kávé', 'tea']
+  'Produce': ['tomato', 'lettuce', 'onion', 'garlic', 'pepper', 'carrot', 'celery', 'potato', 'apple', 'banana', 'lemon', 'lime', 'cucumber', 'spinach', 'broccoli', 'zucchini', 'mushroom', 'avocado', 'cilantro', 'parsley', 'basil', 'ginger', 'cabbage', 'kale', 'asparagus', 'corn', 'peas', 'beans', 'eggplant'],
+  'Meat & Seafood': ['chicken', 'beef', 'pork', 'fish', 'shrimp', 'salmon', 'turkey', 'bacon', 'ham', 'sausage', 'lamb', 'tuna', 'cod', 'tilapia', 'crab', 'lobster', 'duck', 'veal'],
+  'Dairy': ['milk', 'cheese', 'yogurt', 'butter', 'cream', 'egg', 'sour cream', 'cottage cheese', 'mozzarella', 'parmesan', 'cheddar', 'feta'],
+  'Grains & Pasta': ['rice', 'pasta', 'bread', 'flour', 'oats', 'quinoa', 'noodle', 'tortilla', 'couscous', 'barley', 'cereal', 'crackers'],
+  'Pantry': ['oil', 'salt', 'pepper', 'sugar', 'vinegar', 'soy sauce', 'honey', 'mustard', 'ketchup', 'mayo', 'mayonnaise', 'sauce', 'dressing'],
+  'Spices': ['cumin', 'paprika', 'oregano', 'thyme', 'cinnamon', 'turmeric', 'curry', 'chili', 'basil', 'rosemary', 'sage', 'bay leaf', 'nutmeg', 'ginger'],
+  'Canned & Jarred': ['canned', 'tomato sauce', 'coconut milk', 'broth', 'stock', 'paste', 'pickles', 'olives', 'capers'],
+  'Frozen': ['frozen'],
+  'Beverages': ['juice', 'soda', 'coffee', 'tea', 'water', 'wine', 'beer']
 };
 
 function categorizeIngredient(name: string): string {
@@ -45,51 +45,16 @@ function categorizeIngredient(name: string): string {
   return 'Other';
 }
 
-// Clean up ingredient name - remove preparation methods and extra text
-function sanitizeIngredientName(name: string): string {
-  // Remove common preparation descriptions
-  const preparationWords = [
-    'diced', 'chopped', 'minced', 'sliced', 'crushed', 'grated', 'shredded',
-    'julienned', 'cubed', 'halved', 'quartered', 'peeled', 'deveined',
-    'boneless', 'skinless', 'fresh', 'dried', 'frozen', 'canned',
-    'room temperature', 'cold', 'warm', 'melted', 'softened',
-    'finely', 'roughly', 'coarsely', 'thinly', 'thickly',
-    'to taste', 'optional', 'for garnish', 'for serving',
-    'large', 'medium', 'small', 'ripe', 'unripe'
-  ];
-
-  let cleaned = name.trim();
-
-  // Remove content in parentheses
-  cleaned = cleaned.replace(/\(.*?\)/g, '');
-
-  // Remove preparation words
-  for (const word of preparationWords) {
-    const regex = new RegExp(`\\b${word}\\b`, 'gi');
-    cleaned = cleaned.replace(regex, '');
-  }
-
-  // Remove extra commas and spaces
-  cleaned = cleaned.replace(/,\s*,/g, ',');
-  cleaned = cleaned.replace(/\s+/g, ' ');
-  cleaned = cleaned.replace(/^[\s,]+|[\s,]+$/g, '');
-
-  // Capitalize first letter
-  if (cleaned.length > 0) {
-    cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1).toLowerCase();
-  }
-
-  return cleaned || name; // Return original if cleaning results in empty string
-}
-
 // Combine similar ingredients (e.g., "2 eggs" + "3 eggs" = "5 eggs")
+// Now preserves exact ingredient names from recipe database
 function combineIngredients(ingredients: { ingredient: Ingredient; recipeName: string }[]): MealPlanShoppingItem[] {
   const combined: Map<string, MealPlanShoppingItem> = new Map();
 
   for (const { ingredient, recipeName } of ingredients) {
-    // Sanitize the ingredient name to remove preparation methods
-    const cleanName = sanitizeIngredientName(ingredient.name);
-    const key = `${cleanName.toLowerCase()}-${(ingredient.unit || '').toLowerCase()}`;
+    // Use the exact ingredient name from the recipe (no sanitization)
+    const ingredientName = ingredient.name.trim();
+    // Key for combining: lowercase name + unit (to combine "2 eggs" + "3 eggs")
+    const key = `${ingredientName.toLowerCase()}-${(ingredient.unit || '').toLowerCase()}`;
 
     if (combined.has(key)) {
       const existing = combined.get(key)!;
@@ -111,10 +76,10 @@ function combineIngredients(ingredients: { ingredient: Ingredient; recipeName: s
     } else {
       combined.set(key, {
         id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-        ingredientName: cleanName,
+        ingredientName: ingredientName,
         amount: ingredient.amount,
         unit: ingredient.unit || '',
-        category: ingredient.category || categorizeIngredient(cleanName),
+        category: ingredient.category || categorizeIngredient(ingredientName),
         recipeNames: [recipeName],
         checked: false
       });
@@ -147,11 +112,23 @@ export async function POST(request: NextRequest) {
     }
 
     // Extract all ingredients from all meals
+    // Prefer exact ingredients from recipe database when available
     const allIngredients: { ingredient: Ingredient; recipeName: string }[] = [];
 
     for (const day of mealPlan.days) {
       for (const meal of day.meals) {
-        for (const ingredient of meal.ingredients || []) {
+        let ingredients = meal.ingredients || [];
+
+        // Try to get exact ingredients from recipe database
+        if (meal.recipeId) {
+          const dbRecipe = await firebaseService.getRecipeById(meal.recipeId);
+          if (dbRecipe && dbRecipe.ingredients && dbRecipe.ingredients.length > 0) {
+            // Use exact ingredients from the database
+            ingredients = dbRecipe.ingredients;
+          }
+        }
+
+        for (const ingredient of ingredients) {
           allIngredients.push({
             ingredient,
             recipeName: meal.recipeName

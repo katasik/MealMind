@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { firebaseService } from '../../../../lib/firebase';
-import type { MealPlan, PlannedMeal } from '../../../../types';
+import type { MealPlan, PlannedMeal, Ingredient } from '../../../../types';
 
 // Helper: Format date for ICS (YYYYMMDD)
 function formatICSDate(dateStr: string): string {
@@ -38,30 +38,72 @@ function escapeICS(text: string): string {
     .replace(/\n/g, '\\n');
 }
 
+// Helper: Get recipe data - prefer database recipe over meal plan data
+async function getRecipeData(meal: PlannedMeal): Promise<{
+  ingredients: Ingredient[];
+  instructions: string[];
+  description: string;
+  prepTime: number;
+  cookTime: number;
+  servings: number;
+  cuisine: string;
+  difficulty: string;
+}> {
+  // Try to fetch the original recipe from the database
+  if (meal.recipeId) {
+    const recipe = await firebaseService.getRecipeById(meal.recipeId);
+    if (recipe) {
+      return {
+        ingredients: recipe.ingredients || [],
+        instructions: recipe.instructions || [],
+        description: recipe.description || '',
+        prepTime: recipe.prepTime || 0,
+        cookTime: recipe.cookTime || 0,
+        servings: recipe.servings || 4,
+        cuisine: recipe.cuisine || '',
+        difficulty: recipe.difficulty || 'easy'
+      };
+    }
+  }
+
+  // Fallback to meal plan data if recipe not found in database
+  return {
+    ingredients: meal.ingredients || [],
+    instructions: meal.instructions || [],
+    description: meal.recipeDescription || '',
+    prepTime: meal.prepTime || 0,
+    cookTime: meal.cookTime || 0,
+    servings: meal.servings || 4,
+    cuisine: meal.cuisine || '',
+    difficulty: meal.difficulty || 'easy'
+  };
+}
+
 // Helper: Format meal description with full recipe details
-function formatMealDescription(meal: PlannedMeal): string {
+async function formatMealDescription(meal: PlannedMeal): Promise<string> {
+  const recipeData = await getRecipeData(meal);
   const lines: string[] = [];
 
   // Timing info
-  lines.push(`Prep: ${meal.prepTime} min | Cook: ${meal.cookTime} min | Servings: ${meal.servings}`);
-  if (meal.cuisine) {
-    lines.push(`Cuisine: ${meal.cuisine}`);
+  lines.push(`Prep: ${recipeData.prepTime} min | Cook: ${recipeData.cookTime} min | Servings: ${recipeData.servings}`);
+  if (recipeData.cuisine) {
+    lines.push(`Cuisine: ${recipeData.cuisine}`);
   }
-  if (meal.difficulty) {
-    lines.push(`Difficulty: ${meal.difficulty}`);
+  if (recipeData.difficulty) {
+    lines.push(`Difficulty: ${recipeData.difficulty}`);
   }
 
   lines.push('');
 
   // Description
-  if (meal.recipeDescription) {
-    lines.push(meal.recipeDescription);
+  if (recipeData.description) {
+    lines.push(recipeData.description);
     lines.push('');
   }
 
-  // Ingredients
+  // Ingredients - use exact data from recipe database
   lines.push('📝 INGREDIENTS:');
-  for (const ing of meal.ingredients || []) {
+  for (const ing of recipeData.ingredients) {
     const amount = ing.amount ? `${ing.amount} ` : '';
     const unit = ing.unit ? `${ing.unit} ` : '';
     lines.push(`• ${amount}${unit}${ing.name}`);
@@ -69,9 +111,9 @@ function formatMealDescription(meal: PlannedMeal): string {
 
   lines.push('');
 
-  // Instructions
+  // Instructions - use exact data from recipe database
   lines.push('👨‍🍳 INSTRUCTIONS:');
-  (meal.instructions || []).forEach((step, index) => {
+  recipeData.instructions.forEach((step, index) => {
     lines.push(`${index + 1}. ${step}`);
   });
 
@@ -79,7 +121,7 @@ function formatMealDescription(meal: PlannedMeal): string {
 }
 
 // Helper: Generate ICS content from meal plan
-function generateICS(mealPlan: MealPlan): string {
+async function generateICS(mealPlan: MealPlan): Promise<string> {
   const lines: string[] = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
@@ -102,13 +144,16 @@ function generateICS(mealPlan: MealPlan): string {
         const now = new Date();
         const dtstamp = now.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
 
+        // Fetch exact recipe data from database
+        const description = await formatMealDescription(meal);
+
         lines.push('BEGIN:VEVENT');
         lines.push(`UID:${uid}`);
         lines.push(`DTSTAMP:${dtstamp}`);
         lines.push(`DTSTART:${formatICSDate(day.date)}T${time.start}`);
         lines.push(`DTEND:${formatICSDate(day.date)}T${time.end}`);
         lines.push(`SUMMARY:${emoji} ${mealLabel}: ${escapeICS(meal.recipeName)}`);
-        lines.push(`DESCRIPTION:${formatMealDescription(meal)}`);
+        lines.push(`DESCRIPTION:${description}`);
         lines.push(`CATEGORIES:${mealLabel},MealMind,Cooking`);
         lines.push('STATUS:CONFIRMED');
         lines.push('END:VEVENT');
@@ -151,7 +196,7 @@ export async function GET(request: NextRequest) {
     //   );
     // }
 
-    const icsContent = generateICS(mealPlan);
+    const icsContent = await generateICS(mealPlan);
     const filename = `mealmind-week-${mealPlan.weekStartDate}.ics`;
 
     return new NextResponse(icsContent, {

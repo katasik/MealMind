@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { AlertTriangle, Heart, X, Plus, Loader2, Check, Clock } from 'lucide-react';
+import { AlertTriangle, Heart, X, Plus, Loader2, Check, Clock, Globe } from 'lucide-react';
 import Navigation from '@/components/Navigation';
-import type { DietaryRestriction } from '@/types';
+import type { DietaryRestriction, SupportedLanguage } from '@/types';
 
 const COMMON_RESTRICTIONS = [
   { name: 'Gluten-Free', type: 'intolerance' as const },
@@ -34,6 +34,15 @@ const COOKING_TIMES = [
   { value: 'any', label: 'Any', desc: 'No limit', icon: '⏰' }
 ];
 
+const LANGUAGES: { value: SupportedLanguage; label: string; flag: string }[] = [
+  { value: 'en', label: 'English', flag: '🇬🇧' },
+  { value: 'hu', label: 'Magyar', flag: '🇭🇺' },
+  { value: 'de', label: 'Deutsch', flag: '🇩🇪' },
+  { value: 'es', label: 'Español', flag: '🇪🇸' },
+  { value: 'fr', label: 'Français', flag: '🇫🇷' },
+  { value: 'it', label: 'Italiano', flag: '🇮🇹' }
+];
+
 export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -48,6 +57,7 @@ export default function SettingsPage() {
   const [dislikedIngredients, setDislikedIngredients] = useState<string[]>([]);
   const [cuisinePreferences, setCuisinePreferences] = useState<string[]>([]);
   const [cookingTime, setCookingTime] = useState<'quick' | 'moderate' | 'extended' | 'any'>('moderate');
+  const [targetLanguage, setTargetLanguage] = useState<SupportedLanguage>('en');
 
   // Input states
   const [newFavorite, setNewFavorite] = useState('');
@@ -72,6 +82,7 @@ export default function SettingsPage() {
         setDislikedIngredients(prefs.dislikedIngredients || []);
         setCuisinePreferences(prefs.cuisinePreferences || []);
         setCookingTime(prefs.cookingTime || 'moderate');
+        setTargetLanguage(prefs.targetLanguage || 'en');
       }
     } catch (error) {
       console.error('Failed to fetch settings:', error);
@@ -96,7 +107,8 @@ export default function SettingsPage() {
             favoriteIngredients,
             dislikedIngredients,
             cuisinePreferences,
-            cookingTime
+            cookingTime,
+            targetLanguage
           }
         })
       });
@@ -314,11 +326,44 @@ export default function SettingsPage() {
           </div>
         </motion.section>
 
-        {/* Cooking Time */}
+        {/* Language Preference */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
+          className="bg-white border border-[#E9E9E7] rounded-lg p-5 mb-4"
+        >
+          <div className="flex items-center gap-2 mb-3">
+            <Globe className="w-5 h-5 text-[#2383E2]" />
+            <h2 className="text-lg font-semibold text-[#37352F]">Recipe Language</h2>
+          </div>
+          <p className="text-[#787774] text-sm mb-4">
+            All AI-generated recipes will be in this language.
+          </p>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {LANGUAGES.map((lang) => (
+              <button
+                key={lang.value}
+                onClick={() => setTargetLanguage(lang.value)}
+                className={`p-3 rounded-md text-center transition-colors ${
+                  targetLanguage === lang.value
+                    ? 'bg-[#37352F] text-white'
+                    : 'bg-[#F7F6F3] text-[#37352F] hover:bg-[#E9E9E7]'
+                }`}
+              >
+                <div className="text-xl mb-1">{lang.flag}</div>
+                <div className="text-sm font-medium">{lang.label}</div>
+              </button>
+            ))}
+          </div>
+        </motion.section>
+
+        {/* Cooking Time */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
           className="bg-white border border-[#E9E9E7] rounded-lg p-5 mb-4"
         >
           <div className="flex items-center gap-2 mb-3">
@@ -352,7 +397,7 @@ export default function SettingsPage() {
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.4 }}
           className="bg-white border border-[#E9E9E7] rounded-lg p-5"
         >
           <h2 className="text-lg font-semibold text-[#37352F] mb-4">Ingredient Preferences</h2>
