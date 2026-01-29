@@ -8,8 +8,18 @@ import type {
   DayPlan,
   PlannedMeal,
   MealType,
-  Ingredient
+  SupportedLanguage
 } from '../types';
+
+// Language names for prompts
+const LANGUAGE_NAMES: Record<SupportedLanguage, string> = {
+  en: 'English',
+  hu: 'Hungarian (Magyar)',
+  de: 'German (Deutsch)',
+  es: 'Spanish (Español)',
+  fr: 'French (Français)',
+  it: 'Italian (Italiano)'
+};
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
@@ -189,8 +199,18 @@ The user specifically wants recipes with these ingredients: ${preferences.favori
 You MUST include at least one of these as a main ingredient in your recipe!`
       : '';
 
+    // Get the target language
+    const targetLang = preferences.targetLanguage || 'en';
+    const languageName = LANGUAGE_NAMES[targetLang] || 'English';
+    const languageInstruction = targetLang !== 'en'
+      ? `\nLANGUAGE REQUIREMENT (CRITICAL):
+ALL recipe names, descriptions, ingredients, and instructions MUST be written in ${languageName}.
+Do NOT use English - everything must be in ${languageName}.`
+      : '';
+
     return `
 You are an expert meal planning AI assistant. Generate a delicious, safe ${mealType} recipe.
+${languageInstruction}
 
 DIETARY RESTRICTIONS (CRITICAL - MUST COMPLY):
 ${restrictionsText}
@@ -507,8 +527,18 @@ ${existingPlan.map((day, i) => `Day ${i + 1}: ${day.meals.map(m => `${m.mealType
 `
       : '';
 
+    // Get the target language
+    const targetLang = preferences.targetLanguage || 'en';
+    const languageName = LANGUAGE_NAMES[targetLang] || 'English';
+    const languageInstruction = targetLang !== 'en'
+      ? `\nLANGUAGE REQUIREMENT (CRITICAL):
+ALL recipe names, descriptions, ingredients, and instructions MUST be written in ${languageName}.
+Do NOT use English - everything must be in ${languageName}.`
+      : '';
+
     return `
 You are an expert meal planning AI. Generate a balanced ${numberOfDays}-day meal plan starting from ${weekStartDate}.
+${languageInstruction}
 
 DIETARY RESTRICTIONS (CRITICAL - ALL MEALS MUST COMPLY):
 ${restrictionsText}

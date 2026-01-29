@@ -724,7 +724,7 @@ export default function HomePage() {
             onDragEnd={handleDragEnd}
           >
             <div className="overflow-x-auto pb-4">
-              <div className="flex gap-3 min-w-max">
+              <div className="flex gap-4 min-w-max">
                 {mealPlan.days.map((day, index) => (
                   <DayColumn
                     key={day.date}

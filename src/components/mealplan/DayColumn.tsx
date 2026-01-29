@@ -48,7 +48,7 @@ export default function DayColumn({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: dayIndex * 0.05 }}
-      className={`flex flex-col w-[220px] flex-shrink-0 ${
+      className={`flex flex-col w-[260px] flex-shrink-0 ${
         isToday ? 'ring-2 ring-[#2383E2] ring-offset-2' : ''
       } ${isOver && isDraft ? 'ring-2 ring-[#10B981] ring-offset-2' : ''} bg-white rounded-lg border border-[#E9E9E7] overflow-hidden`}
     >
@@ -65,7 +65,7 @@ export default function DayColumn({
       </div>
 
       {/* Meals */}
-      <div className="flex-1 p-2 space-y-2 overflow-y-auto max-h-[500px] bg-[#FBFBFA]">
+      <div className="flex-1 p-3 space-y-3 overflow-y-auto max-h-[600px] bg-[#FBFBFA]">
         {sortedMeals.length > 0 ? (
           sortedMeals.map((meal) => (
             <MealCard

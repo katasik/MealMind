@@ -32,19 +32,23 @@ export default function RecipeCard({ recipe, onView, onDelete, canDelete }: Reci
       className="bg-white border border-[#E9E9E7] rounded-lg overflow-hidden hover:border-[#D3D3D0] hover:shadow-sm transition-all cursor-pointer flex flex-col"
     >
       {/* Image */}
-      {recipe.imageUrl ? (
-        <div className="h-36 w-full bg-[#F7F6F3] overflow-hidden">
+      <div className="h-40 w-full bg-[#F7F6F3] overflow-hidden relative">
+        {recipe.imageUrl ? (
           <img
             src={recipe.imageUrl}
             alt={recipe.name}
             className="w-full h-full object-cover"
+            onError={(e) => {
+              // Hide broken image and show placeholder
+              e.currentTarget.style.display = 'none';
+              e.currentTarget.nextElementSibling?.classList.remove('hidden');
+            }}
           />
+        ) : null}
+        <div className={`absolute inset-0 bg-gradient-to-br from-[#F7F6F3] to-[#E9E9E7] flex items-center justify-center ${recipe.imageUrl ? 'hidden' : ''}`}>
+          <span className="text-5xl opacity-40">🍽️</span>
         </div>
-      ) : (
-        <div className="h-24 w-full bg-gradient-to-br from-[#F7F6F3] to-[#E9E9E7] flex items-center justify-center">
-          <span className="text-4xl opacity-30">🍽️</span>
-        </div>
-      )}
+      </div>
 
       {/* Content */}
       <div className="p-4 flex-1 flex flex-col">

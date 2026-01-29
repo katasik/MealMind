@@ -59,37 +59,34 @@ export default function MealCard({
       style={style}
       {...attributes}
       {...listeners}
-      className={`bg-white border border-[#E9E9E7] rounded-md overflow-hidden hover:border-[#D3D3D0] hover:shadow-sm transition-all h-[200px] flex flex-col ${
+      className={`bg-white border border-[#E9E9E7] rounded-lg overflow-hidden hover:border-[#D3D3D0] hover:shadow-md transition-all h-[220px] flex flex-col ${
         isDraft ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
-      } ${isDragging ? 'opacity-50' : ''}`}
+      } ${isDragging ? 'opacity-50 shadow-lg' : ''}`}
       onClick={isDraft ? undefined : onViewRecipe}
     >
       {/* Image */}
-      {meal.imageUrl ? (
-        <div
-          className="h-[70px] w-full bg-[#F7F6F3] overflow-hidden flex-shrink-0 cursor-pointer"
-          onClick={(e) => {
-            e.stopPropagation();
-            onViewRecipe?.();
-          }}
-        >
+      <div
+        className="h-[80px] w-full bg-[#F7F6F3] overflow-hidden flex-shrink-0 cursor-pointer relative"
+        onClick={(e) => {
+          e.stopPropagation();
+          onViewRecipe?.();
+        }}
+      >
+        {meal.imageUrl ? (
           <img
             src={meal.imageUrl}
             alt={meal.recipeName}
             className="w-full h-full object-cover pointer-events-none"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+              e.currentTarget.nextElementSibling?.classList.remove('hidden');
+            }}
           />
+        ) : null}
+        <div className={`absolute inset-0 bg-gradient-to-br from-[#F7F6F3] to-[#E9E9E7] flex items-center justify-center ${meal.imageUrl ? 'hidden' : ''}`}>
+          <span className="text-3xl opacity-40 pointer-events-none">🍽️</span>
         </div>
-      ) : (
-        <div
-          className="h-[70px] w-full bg-gradient-to-br from-[#F7F6F3] to-[#E9E9E7] flex items-center justify-center flex-shrink-0 cursor-pointer"
-          onClick={(e) => {
-            e.stopPropagation();
-            onViewRecipe?.();
-          }}
-        >
-          <span className="text-2xl opacity-50 pointer-events-none">🍽️</span>
-        </div>
-      )}
+      </div>
 
       <div className="p-2.5 flex flex-col flex-1">
         {/* Meal Type Badge & Actions */}
