@@ -179,17 +179,17 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#FBFBFA]">
+      <div className="min-h-screen bg-[#F9FAFB]">
         <Navigation />
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-6 h-6 text-[#787774] animate-spin" />
+          <Loader2 className="w-6 h-6 text-[#6B7280] animate-spin" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#FBFBFA]">
+    <div className="min-h-screen bg-[#F9FAFB]">
       <Navigation />
 
       <main className="max-w-3xl mx-auto px-6 py-8">
@@ -198,16 +198,16 @@ export default function SettingsPage() {
           <div>
             <div className="flex items-center gap-3 mb-1">
               <span className="text-3xl">⚙️</span>
-              <h1 className="text-3xl font-bold text-[#37352F]">Settings</h1>
+              <h1 className="text-3xl font-bold text-[#1F2937]">Settings</h1>
             </div>
-            <p className="text-[#787774] ml-12">
+            <p className="text-[#6B7280] ml-12">
               Customize your meal planning preferences
             </p>
           </div>
           <button
             onClick={saveSettings}
             disabled={saving}
-            className="flex items-center gap-2 px-4 py-2 bg-[#37352F] text-white rounded-md font-medium hover:bg-[#2F2D2A] disabled:opacity-50 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-[#1F2937] text-white rounded-md font-medium hover:bg-[#2F2D2A] disabled:opacity-50 transition-colors"
           >
             {saving ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -222,13 +222,13 @@ export default function SettingsPage() {
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white border border-[#E9E9E7] rounded-lg p-5 mb-4"
+          className="bg-white border border-[#E5E7EB] rounded-lg p-5 mb-4"
         >
           <div className="flex items-center gap-2 mb-3">
             <AlertTriangle className="w-5 h-5 text-[#EB5757]" />
-            <h2 className="text-lg font-semibold text-[#37352F]">Dietary Restrictions</h2>
+            <h2 className="text-lg font-semibold text-[#1F2937]">Dietary Restrictions</h2>
           </div>
-          <p className="text-[#787774] text-sm mb-4">
+          <p className="text-[#6B7280] text-sm mb-4">
             Select any dietary restrictions. Recipes will be filtered to ensure safety.
           </p>
 
@@ -241,8 +241,8 @@ export default function SettingsPage() {
                   onClick={() => toggleRestriction(restriction.name, restriction.type)}
                   className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                     isSelected
-                      ? 'bg-[#37352F] text-white'
-                      : 'bg-[#F7F6F3] text-[#37352F] hover:bg-[#E9E9E7]'
+                      ? 'bg-[#1F2937] text-white'
+                      : 'bg-[#F3F4F6] text-[#1F2937] hover:bg-[#E5E7EB]'
                   }`}
                 >
                   {restriction.name}
@@ -280,11 +280,11 @@ export default function SettingsPage() {
               onChange={(e) => setCustomRestriction(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && addCustomRestriction()}
               placeholder="Add custom restriction..."
-              className="flex-1 px-3 py-2 bg-white border border-[#E9E9E7] rounded-md focus:border-[#37352F] focus:outline-none text-sm"
+              className="flex-1 px-3 py-2 bg-white border border-[#E5E7EB] rounded-md focus:border-[#1F2937] focus:outline-none text-sm"
             />
             <button
               onClick={addCustomRestriction}
-              className="px-3 py-2 bg-[#F7F6F3] text-[#37352F] rounded-md hover:bg-[#E9E9E7] transition-colors"
+              className="px-3 py-2 bg-[#F3F4F6] text-[#1F2937] rounded-md hover:bg-[#E5E7EB] transition-colors"
             >
               <Plus className="w-4 h-4" />
             </button>
@@ -296,13 +296,13 @@ export default function SettingsPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-white border border-[#E9E9E7] rounded-lg p-5 mb-4"
+          className="bg-white border border-[#E5E7EB] rounded-lg p-5 mb-4"
         >
           <div className="flex items-center gap-2 mb-3">
             <Heart className="w-5 h-5 text-[#EB5757]" />
-            <h2 className="text-lg font-semibold text-[#37352F]">Cuisine Preferences</h2>
+            <h2 className="text-lg font-semibold text-[#1F2937]">Cuisine Preferences</h2>
           </div>
-          <p className="text-[#787774] text-sm mb-4">
+          <p className="text-[#6B7280] text-sm mb-4">
             Select your favorite cuisines for recipe suggestions.
           </p>
 
@@ -315,8 +315,8 @@ export default function SettingsPage() {
                   onClick={() => toggleCuisine(cuisine)}
                   className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                     isSelected
-                      ? 'bg-[#37352F] text-white'
-                      : 'bg-[#F7F6F3] text-[#37352F] hover:bg-[#E9E9E7]'
+                      ? 'bg-[#1F2937] text-white'
+                      : 'bg-[#F3F4F6] text-[#1F2937] hover:bg-[#E5E7EB]'
                   }`}
                 >
                   {cuisine}
@@ -331,13 +331,13 @@ export default function SettingsPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-white border border-[#E9E9E7] rounded-lg p-5 mb-4"
+          className="bg-white border border-[#E5E7EB] rounded-lg p-5 mb-4"
         >
           <div className="flex items-center gap-2 mb-3">
-            <Globe className="w-5 h-5 text-[#2383E2]" />
-            <h2 className="text-lg font-semibold text-[#37352F]">Recipe Language</h2>
+            <Globe className="w-5 h-5 text-[#0EA5E9]" />
+            <h2 className="text-lg font-semibold text-[#1F2937]">Recipe Language</h2>
           </div>
-          <p className="text-[#787774] text-sm mb-4">
+          <p className="text-[#6B7280] text-sm mb-4">
             All AI-generated recipes will be in this language.
           </p>
 
@@ -348,8 +348,8 @@ export default function SettingsPage() {
                 onClick={() => setTargetLanguage(lang.value)}
                 className={`p-3 rounded-md text-center transition-colors ${
                   targetLanguage === lang.value
-                    ? 'bg-[#37352F] text-white'
-                    : 'bg-[#F7F6F3] text-[#37352F] hover:bg-[#E9E9E7]'
+                    ? 'bg-[#1F2937] text-white'
+                    : 'bg-[#F3F4F6] text-[#1F2937] hover:bg-[#E5E7EB]'
                 }`}
               >
                 <div className="text-xl mb-1">{lang.flag}</div>
@@ -364,13 +364,13 @@ export default function SettingsPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="bg-white border border-[#E9E9E7] rounded-lg p-5 mb-4"
+          className="bg-white border border-[#E5E7EB] rounded-lg p-5 mb-4"
         >
           <div className="flex items-center gap-2 mb-3">
-            <Clock className="w-5 h-5 text-[#2383E2]" />
-            <h2 className="text-lg font-semibold text-[#37352F]">Cooking Time Preference</h2>
+            <Clock className="w-5 h-5 text-[#0EA5E9]" />
+            <h2 className="text-lg font-semibold text-[#1F2937]">Cooking Time Preference</h2>
           </div>
-          <p className="text-[#787774] text-sm mb-4">
+          <p className="text-[#6B7280] text-sm mb-4">
             How much time do you typically have to cook?
           </p>
 
@@ -381,8 +381,8 @@ export default function SettingsPage() {
                 onClick={() => setCookingTime(time.value as any)}
                 className={`p-3 rounded-md text-center transition-colors ${
                   cookingTime === time.value
-                    ? 'bg-[#37352F] text-white'
-                    : 'bg-[#F7F6F3] text-[#37352F] hover:bg-[#E9E9E7]'
+                    ? 'bg-[#1F2937] text-white'
+                    : 'bg-[#F3F4F6] text-[#1F2937] hover:bg-[#E5E7EB]'
                 }`}
               >
                 <div className="text-xl mb-1">{time.icon}</div>
@@ -398,14 +398,14 @@ export default function SettingsPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="bg-white border border-[#E9E9E7] rounded-lg p-5"
+          className="bg-white border border-[#E5E7EB] rounded-lg p-5"
         >
-          <h2 className="text-lg font-semibold text-[#37352F] mb-4">Ingredient Preferences</h2>
+          <h2 className="text-lg font-semibold text-[#1F2937] mb-4">Ingredient Preferences</h2>
 
           <div className="grid md:grid-cols-2 gap-6">
             {/* Favorites */}
             <div>
-              <label className="block text-sm font-medium text-[#37352F] mb-2">
+              <label className="block text-sm font-medium text-[#1F2937] mb-2">
                 Favorite Ingredients
               </label>
               <div className="flex gap-2 mb-3">
@@ -415,7 +415,7 @@ export default function SettingsPage() {
                   onChange={(e) => setNewFavorite(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && addIngredient('favorite')}
                   placeholder="Add ingredient..."
-                  className="flex-1 px-3 py-2 bg-white border border-[#E9E9E7] rounded-md focus:border-[#37352F] focus:outline-none text-sm"
+                  className="flex-1 px-3 py-2 bg-white border border-[#E5E7EB] rounded-md focus:border-[#1F2937] focus:outline-none text-sm"
                 />
                 <button
                   onClick={() => addIngredient('favorite')}
@@ -440,14 +440,14 @@ export default function SettingsPage() {
                   </span>
                 ))}
                 {favoriteIngredients.length === 0 && (
-                  <span className="text-sm text-[#787774]">No favorites added</span>
+                  <span className="text-sm text-[#6B7280]">No favorites added</span>
                 )}
               </div>
             </div>
 
             {/* Disliked */}
             <div>
-              <label className="block text-sm font-medium text-[#37352F] mb-2">
+              <label className="block text-sm font-medium text-[#1F2937] mb-2">
                 Disliked Ingredients
               </label>
               <div className="flex gap-2 mb-3">
@@ -457,7 +457,7 @@ export default function SettingsPage() {
                   onChange={(e) => setNewDisliked(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && addIngredient('disliked')}
                   placeholder="Add ingredient..."
-                  className="flex-1 px-3 py-2 bg-white border border-[#E9E9E7] rounded-md focus:border-[#37352F] focus:outline-none text-sm"
+                  className="flex-1 px-3 py-2 bg-white border border-[#E5E7EB] rounded-md focus:border-[#1F2937] focus:outline-none text-sm"
                 />
                 <button
                   onClick={() => addIngredient('disliked')}
@@ -482,7 +482,7 @@ export default function SettingsPage() {
                   </span>
                 ))}
                 {dislikedIngredients.length === 0 && (
-                  <span className="text-sm text-[#787774]">No dislikes added</span>
+                  <span className="text-sm text-[#6B7280]">No dislikes added</span>
                 )}
               </div>
             </div>

@@ -198,14 +198,14 @@ export default function AddRecipeModal({ isOpen, onClose, onSave }: AddRecipeMod
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col border border-[#E9E9E7]"
+          className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col border border-[#E5E7EB]"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-[#E9E9E7]">
-            <h2 className="text-xl font-semibold text-[#37352F]">Add Recipe</h2>
+          <div className="flex items-center justify-between px-6 py-4 border-b border-[#E5E7EB]">
+            <h2 className="text-xl font-semibold text-[#1F2937]">Add Recipe</h2>
             <button
               onClick={handleClose}
-              className="p-2 text-[#787774] hover:text-[#37352F] hover:bg-[#F7F6F3] rounded-md transition-colors"
+              className="p-2 text-[#6B7280] hover:text-[#1F2937] hover:bg-[#F3F4F6] rounded-md transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -225,37 +225,37 @@ export default function AddRecipeModal({ isOpen, onClose, onSave }: AddRecipeMod
               <>
                 {mode === 'select' && (
                   <div className="space-y-4">
-                    <p className="text-[#787774] text-center mb-6">
+                    <p className="text-[#6B7280] text-center mb-6">
                       How would you like to add your recipe?
                     </p>
                     <div className="grid grid-cols-3 gap-4">
                       <button
                         onClick={() => setMode('url')}
-                        className="flex flex-col items-center gap-3 p-6 border-2 border-dashed border-[#E9E9E7] rounded-lg hover:border-[#37352F] hover:bg-[#F7F6F3] transition-colors"
+                        className="flex flex-col items-center gap-3 p-6 border-2 border-dashed border-[#E5E7EB] rounded-lg hover:border-[#1F2937] hover:bg-[#F3F4F6] transition-colors"
                       >
-                        <Globe className="w-10 h-10 text-[#37352F]" />
-                        <span className="font-medium text-[#37352F]">From URL</span>
-                        <span className="text-xs text-[#787774] text-center">
+                        <Globe className="w-10 h-10 text-[#1F2937]" />
+                        <span className="font-medium text-[#1F2937]">From URL</span>
+                        <span className="text-xs text-[#6B7280] text-center">
                           Paste a recipe link
                         </span>
                       </button>
                       <button
                         onClick={() => setMode('text')}
-                        className="flex flex-col items-center gap-3 p-6 border-2 border-dashed border-[#E9E9E7] rounded-lg hover:border-[#37352F] hover:bg-[#F7F6F3] transition-colors"
+                        className="flex flex-col items-center gap-3 p-6 border-2 border-dashed border-[#E5E7EB] rounded-lg hover:border-[#1F2937] hover:bg-[#F3F4F6] transition-colors"
                       >
-                        <FileText className="w-10 h-10 text-[#37352F]" />
-                        <span className="font-medium text-[#37352F]">Paste Text</span>
-                        <span className="text-xs text-[#787774] text-center">
+                        <FileText className="w-10 h-10 text-[#1F2937]" />
+                        <span className="font-medium text-[#1F2937]">Paste Text</span>
+                        <span className="text-xs text-[#6B7280] text-center">
                           Copy and paste recipe
                         </span>
                       </button>
                       <button
                         onClick={() => setMode('pdf')}
-                        className="flex flex-col items-center gap-3 p-6 border-2 border-dashed border-[#E9E9E7] rounded-lg hover:border-[#37352F] hover:bg-[#F7F6F3] transition-colors"
+                        className="flex flex-col items-center gap-3 p-6 border-2 border-dashed border-[#E5E7EB] rounded-lg hover:border-[#1F2937] hover:bg-[#F3F4F6] transition-colors"
                       >
-                        <Upload className="w-10 h-10 text-[#37352F]" />
-                        <span className="font-medium text-[#37352F]">Upload PDF</span>
-                        <span className="text-xs text-[#787774] text-center">
+                        <Upload className="w-10 h-10 text-[#1F2937]" />
+                        <span className="font-medium text-[#1F2937]">Upload PDF</span>
+                        <span className="text-xs text-[#6B7280] text-center">
                           Import from PDF file
                         </span>
                       </button>
@@ -267,12 +267,12 @@ export default function AddRecipeModal({ isOpen, onClose, onSave }: AddRecipeMod
                   <div className="space-y-4">
                     <button
                       onClick={() => setMode('select')}
-                      className="text-sm text-[#787774] hover:text-[#37352F]"
+                      className="text-sm text-[#6B7280] hover:text-[#1F2937]"
                     >
                       &larr; Back
                     </button>
                     <div className="space-y-2">
-                      <label className="block text-sm font-medium text-[#37352F]">
+                      <label className="block text-sm font-medium text-[#1F2937]">
                         Recipe URL
                       </label>
                       <input
@@ -280,16 +280,16 @@ export default function AddRecipeModal({ isOpen, onClose, onSave }: AddRecipeMod
                         value={url}
                         onChange={(e) => setUrl(e.target.value)}
                         placeholder="https://example.com/recipe/delicious-pasta"
-                        className="w-full p-4 border border-[#E9E9E7] rounded-md focus:border-[#37352F] focus:outline-none text-[#37352F] placeholder:text-[#9B9A97]"
+                        className="w-full p-4 border border-[#E5E7EB] rounded-md focus:border-[#1F2937] focus:outline-none text-[#1F2937] placeholder:text-[#9CA3AF]"
                       />
-                      <p className="text-xs text-[#787774]">
+                      <p className="text-xs text-[#6B7280]">
                         Paste a link to any recipe page. We&apos;ll extract the recipe details automatically.
                       </p>
                     </div>
                     <button
                       onClick={parseUrl}
                       disabled={loading || !url.trim()}
-                      className="w-full py-3 bg-[#37352F] text-white rounded-md font-medium hover:bg-[#2F2D2A] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      className="w-full py-3 bg-[#1F2937] text-white rounded-md font-medium hover:bg-[#2F2D2A] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                       {loading ? (
                         <>
@@ -310,7 +310,7 @@ export default function AddRecipeModal({ isOpen, onClose, onSave }: AddRecipeMod
                   <div className="space-y-4">
                     <button
                       onClick={() => setMode('select')}
-                      className="text-sm text-[#787774] hover:text-[#37352F]"
+                      className="text-sm text-[#6B7280] hover:text-[#1F2937]"
                     >
                       &larr; Back
                     </button>
@@ -318,12 +318,12 @@ export default function AddRecipeModal({ isOpen, onClose, onSave }: AddRecipeMod
                       value={text}
                       onChange={(e) => setText(e.target.value)}
                       placeholder="Paste your recipe text here...&#10;&#10;Include the recipe name, ingredients, and instructions."
-                      className="w-full h-64 p-4 border border-[#E9E9E7] rounded-md focus:border-[#37352F] focus:outline-none resize-none text-[#37352F] placeholder:text-[#9B9A97]"
+                      className="w-full h-64 p-4 border border-[#E5E7EB] rounded-md focus:border-[#1F2937] focus:outline-none resize-none text-[#1F2937] placeholder:text-[#9CA3AF]"
                     />
                     <button
                       onClick={parseText}
                       disabled={loading || !text.trim()}
-                      className="w-full py-3 bg-[#37352F] text-white rounded-md font-medium hover:bg-[#2F2D2A] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      className="w-full py-3 bg-[#1F2937] text-white rounded-md font-medium hover:bg-[#2F2D2A] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                       {loading ? (
                         <>
@@ -341,7 +341,7 @@ export default function AddRecipeModal({ isOpen, onClose, onSave }: AddRecipeMod
                   <div className="space-y-4">
                     <button
                       onClick={() => setMode('select')}
-                      className="text-sm text-[#787774] hover:text-[#37352F]"
+                      className="text-sm text-[#6B7280] hover:text-[#1F2937]"
                     >
                       &larr; Back
                     </button>
@@ -357,20 +357,20 @@ export default function AddRecipeModal({ isOpen, onClose, onSave }: AddRecipeMod
                     />
                     <div
                       onClick={() => fileInputRef.current?.click()}
-                      className="border-2 border-dashed border-[#E9E9E7] rounded-lg p-12 text-center hover:border-[#37352F] hover:bg-[#F7F6F3] cursor-pointer transition-colors"
+                      className="border-2 border-dashed border-[#E5E7EB] rounded-lg p-12 text-center hover:border-[#1F2937] hover:bg-[#F3F4F6] cursor-pointer transition-colors"
                     >
                       {loading ? (
                         <div className="flex flex-col items-center gap-3">
-                          <Loader2 className="w-12 h-12 text-[#37352F] animate-spin" />
-                          <span className="text-[#787774]">Processing PDF...</span>
+                          <Loader2 className="w-12 h-12 text-[#1F2937] animate-spin" />
+                          <span className="text-[#6B7280]">Processing PDF...</span>
                         </div>
                       ) : (
                         <>
-                          <Upload className="w-12 h-12 text-[#787774] mx-auto mb-4" />
-                          <p className="text-[#37352F] font-medium">
+                          <Upload className="w-12 h-12 text-[#6B7280] mx-auto mb-4" />
+                          <p className="text-[#1F2937] font-medium">
                             Click to upload PDF
                           </p>
-                          <p className="text-sm text-[#787774] mt-2">
+                          <p className="text-sm text-[#6B7280] mt-2">
                             Maximum file size: 100MB
                           </p>
                         </>
@@ -383,7 +383,7 @@ export default function AddRecipeModal({ isOpen, onClose, onSave }: AddRecipeMod
               // Preview mode
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-[#37352F]">
+                  <h3 className="font-semibold text-[#1F2937]">
                     Found {parsedRecipes.length} recipe{parsedRecipes.length > 1 ? 's' : ''}
                   </h3>
                   <button
@@ -391,13 +391,13 @@ export default function AddRecipeModal({ isOpen, onClose, onSave }: AddRecipeMod
                       setParsedRecipes([]);
                       setSelectedRecipes(new Set());
                     }}
-                    className="text-sm text-[#787774] hover:text-[#37352F]"
+                    className="text-sm text-[#6B7280] hover:text-[#1F2937]"
                   >
                     &larr; Start over
                   </button>
                 </div>
 
-                <p className="text-sm text-[#787774]">
+                <p className="text-sm text-[#6B7280]">
                   Select the recipes you want to save:
                 </p>
 
@@ -408,15 +408,15 @@ export default function AddRecipeModal({ isOpen, onClose, onSave }: AddRecipeMod
                       onClick={() => toggleRecipe(index)}
                       className={`p-4 border rounded-lg cursor-pointer transition-colors ${
                         selectedRecipes.has(index)
-                          ? 'border-[#37352F] bg-[#F7F6F3]'
-                          : 'border-[#E9E9E7] hover:border-[#D3D3D0]'
+                          ? 'border-[#1F2937] bg-[#F3F4F6]'
+                          : 'border-[#E5E7EB] hover:border-[#D3D3D0]'
                       }`}
                     >
                       <div className="flex items-start gap-3">
                         <div
                           className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
                             selectedRecipes.has(index)
-                              ? 'border-[#37352F] bg-[#37352F]'
+                              ? 'border-[#1F2937] bg-[#1F2937]'
                               : 'border-[#D3D3D0]'
                           }`}
                         >
@@ -426,7 +426,7 @@ export default function AddRecipeModal({ isOpen, onClose, onSave }: AddRecipeMod
                         </div>
                         {/* Recipe Image */}
                         {recipe.imageUrl ? (
-                          <div className="w-16 h-16 rounded-md overflow-hidden flex-shrink-0 bg-[#F7F6F3]">
+                          <div className="w-16 h-16 rounded-md overflow-hidden flex-shrink-0 bg-[#F3F4F6]">
                             <img
                               src={recipe.imageUrl}
                               alt={recipe.name}
@@ -434,22 +434,22 @@ export default function AddRecipeModal({ isOpen, onClose, onSave }: AddRecipeMod
                             />
                           </div>
                         ) : (
-                          <div className="w-16 h-16 rounded-md bg-[#F7F6F3] flex items-center justify-center flex-shrink-0">
+                          <div className="w-16 h-16 rounded-md bg-[#F3F4F6] flex items-center justify-center flex-shrink-0">
                             <span className="text-xl opacity-40">🍽️</span>
                           </div>
                         )}
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-semibold text-[#37352F]">{recipe.name}</h4>
-                          <p className="text-sm text-[#787774] line-clamp-2 mt-1">
+                          <h4 className="font-semibold text-[#1F2937]">{recipe.name}</h4>
+                          <p className="text-sm text-[#6B7280] line-clamp-2 mt-1">
                             {recipe.description}
                           </p>
-                          <div className="flex gap-4 mt-2 text-xs text-[#787774]">
+                          <div className="flex gap-4 mt-2 text-xs text-[#6B7280]">
                             <span>{recipe.prepTime + recipe.cookTime} min</span>
                             <span>{recipe.servings} servings</span>
                             <span>{recipe.cuisine}</span>
                             <span className="capitalize">{recipe.difficulty}</span>
                           </div>
-                          <div className="text-xs text-[#9B9A97] mt-1">
+                          <div className="text-xs text-[#9CA3AF] mt-1">
                             {recipe.ingredients.length} ingredients &bull; {recipe.instructions.length} steps
                           </div>
                         </div>
@@ -463,11 +463,11 @@ export default function AddRecipeModal({ isOpen, onClose, onSave }: AddRecipeMod
 
           {/* Footer */}
           {parsedRecipes.length > 0 && (
-            <div className="px-6 py-4 border-t border-[#E9E9E7] bg-[#F7F6F3]">
+            <div className="px-6 py-4 border-t border-[#E5E7EB] bg-[#F3F4F6]">
               <button
                 onClick={handleSave}
                 disabled={saving || selectedRecipes.size === 0}
-                className="w-full py-3 bg-[#37352F] text-white rounded-md font-medium hover:bg-[#2F2D2A] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full py-3 bg-[#1F2937] text-white rounded-md font-medium hover:bg-[#2F2D2A] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {saving ? (
                   <>

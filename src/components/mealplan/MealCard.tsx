@@ -1,6 +1,6 @@
 'use client';
 
-import { Clock, RefreshCw, ChefHat, Utensils, BookOpen } from 'lucide-react';
+import { Clock, RefreshCw, ChefHat, Utensils, BookOpen, GripVertical } from 'lucide-react';
 import { useDraggable } from '@dnd-kit/core';
 import type { PlannedMeal, MealType } from '@/types';
 
@@ -58,15 +58,12 @@ export default function MealCard({
       ref={setNodeRef}
       style={style}
       {...attributes}
-      {...listeners}
-      className={`bg-white border border-[#E9E9E7] rounded-lg overflow-hidden hover:border-[#D3D3D0] hover:shadow-md transition-all h-[220px] flex flex-col ${
-        isDraft ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
-      } ${isDragging ? 'opacity-50 shadow-lg' : ''}`}
-      onClick={isDraft ? undefined : onViewRecipe}
+      className={`bg-white border border-[#E5E7EB] rounded-lg overflow-hidden hover:border-[#D3D3D0] hover:shadow-md transition-all h-[220px] flex flex-col cursor-pointer ${isDragging ? 'opacity-50 shadow-lg' : ''}`}
+      onClick={onViewRecipe}
     >
       {/* Image */}
       <div
-        className="h-[80px] w-full bg-[#F7F6F3] overflow-hidden flex-shrink-0 cursor-pointer relative"
+        className="h-[80px] w-full bg-[#F3F4F6] overflow-hidden flex-shrink-0 cursor-pointer relative"
         onClick={(e) => {
           e.stopPropagation();
           onViewRecipe?.();
@@ -83,7 +80,7 @@ export default function MealCard({
             }}
           />
         ) : null}
-        <div className={`absolute inset-0 bg-gradient-to-br from-[#F7F6F3] to-[#E9E9E7] flex items-center justify-center ${meal.imageUrl ? 'hidden' : ''}`}>
+        <div className={`absolute inset-0 bg-gradient-to-br from-[#F3F4F6] to-[#E5E7EB] flex items-center justify-center ${meal.imageUrl ? 'hidden' : ''}`}>
           <span className="text-3xl opacity-40 pointer-events-none">🍽️</span>
         </div>
       </div>
@@ -91,9 +88,22 @@ export default function MealCard({
       <div className="p-2.5 flex flex-col flex-1">
         {/* Meal Type Badge & Actions */}
         <div className="flex items-center justify-between mb-1.5 flex-shrink-0">
-          <span className={`text-[9px] font-medium ${colors.text} ${colors.badge} px-1.5 py-0.5 rounded uppercase tracking-wide`}>
-            {mealTypeLabels[meal.mealType]}
-          </span>
+          <div className="flex items-center gap-1.5">
+            {isDraft && (
+              <div
+                {...listeners}
+                className="cursor-grab active:cursor-grabbing p-0.5 hover:bg-[#F3F4F6] rounded touch-manipulation"
+                onClick={(e) => e.stopPropagation()}
+                title="Drag to reorder"
+                style={{ minWidth: '24px', minHeight: '24px' }}
+              >
+                <GripVertical className="w-3.5 h-3.5 text-[#9CA3AF]" />
+              </div>
+            )}
+            <span className={`text-[9px] font-medium ${colors.text} ${colors.badge} px-1.5 py-0.5 rounded uppercase tracking-wide`}>
+              {mealTypeLabels[meal.mealType]}
+            </span>
+          </div>
           {isDraft && (
             <div className="flex items-center gap-0.5">
               {onSelectFromSaved && (
@@ -102,10 +112,10 @@ export default function MealCard({
                     e.stopPropagation();
                     onSelectFromSaved();
                   }}
-                  className="p-1 hover:bg-[#F7F6F3] rounded transition-colors"
+                  className="p-1 hover:bg-[#F3F4F6] rounded transition-colors"
                   title="Choose from saved recipes"
                 >
-                  <BookOpen className="w-3.5 h-3.5 text-[#787774]" />
+                  <BookOpen className="w-3.5 h-3.5 text-[#6B7280]" />
                 </button>
               )}
               {onRegenerateClick && (
@@ -115,10 +125,10 @@ export default function MealCard({
                     onRegenerateClick();
                   }}
                   disabled={isRegenerating}
-                  className="p-1 hover:bg-[#F7F6F3] rounded transition-colors disabled:opacity-50"
+                  className="p-1 hover:bg-[#F3F4F6] rounded transition-colors disabled:opacity-50"
                   title="AI suggestion"
                 >
-                  <RefreshCw className={`w-3.5 h-3.5 text-[#787774] ${isRegenerating ? 'animate-spin' : ''}`} />
+                  <RefreshCw className={`w-3.5 h-3.5 text-[#6B7280] ${isRegenerating ? 'animate-spin' : ''}`} />
                 </button>
               )}
             </div>
@@ -127,7 +137,7 @@ export default function MealCard({
 
         {/* Recipe Name */}
         <h4
-          className="font-medium text-[#37352F] text-sm leading-tight line-clamp-2 flex-shrink-0 cursor-pointer hover:text-[#2383E2]"
+          className="font-medium text-[#1F2937] text-sm leading-tight line-clamp-2 flex-shrink-0 cursor-pointer hover:text-[#0EA5E9]"
           onClick={(e) => {
             e.stopPropagation();
             onViewRecipe?.();
@@ -138,7 +148,7 @@ export default function MealCard({
 
         {/* Description */}
         <p
-          className="text-[11px] text-[#787774] line-clamp-1 mt-1 flex-1 cursor-pointer hover:text-[#37352F]"
+          className="text-[11px] text-[#6B7280] line-clamp-1 mt-1 flex-1 cursor-pointer hover:text-[#1F2937]"
           onClick={(e) => {
             e.stopPropagation();
             onViewRecipe?.();
@@ -148,7 +158,7 @@ export default function MealCard({
         </p>
 
         {/* Meta Info */}
-        <div className="flex items-center gap-2 text-[10px] text-[#787774] flex-shrink-0 mt-auto pt-1">
+        <div className="flex items-center gap-2 text-[10px] text-[#6B7280] flex-shrink-0 mt-auto pt-1">
           <div className="flex items-center gap-0.5">
             <Clock className="w-3 h-3" />
             <span>{totalTime}m</span>

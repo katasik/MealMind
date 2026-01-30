@@ -87,42 +87,42 @@ export default function ShoppingListModal({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.98, y: 10 }}
               transition={{ duration: 0.15 }}
-              className="w-full max-w-lg max-h-[85vh] bg-[#FBFBFA] rounded-lg shadow-xl overflow-hidden flex flex-col border border-[#E9E9E7]"
+              className="w-full max-w-lg max-h-[85vh] bg-[#F9FAFB] rounded-lg shadow-xl overflow-hidden flex flex-col border border-[#E5E7EB]"
             >
               {/* Header */}
-              <div className="flex items-center justify-between p-5 border-b border-[#E9E9E7]">
+              <div className="flex items-center justify-between p-5 border-b border-[#E5E7EB]">
                 <div className="flex items-center gap-3">
                   <div className="text-2xl">🛒</div>
                   <div>
-                    <h2 className="text-lg font-semibold text-[#37352F]">Shopping List</h2>
-                    <p className="text-sm text-[#787774]">
+                    <h2 className="text-lg font-semibold text-[#1F2937]">Shopping List</h2>
+                    <p className="text-sm text-[#6B7280]">
                       Check off items you already have
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={onClose}
-                  className="p-1.5 hover:bg-[#F7F6F3] rounded transition-colors"
+                  className="p-1.5 hover:bg-[#F3F4F6] rounded transition-colors"
                 >
-                  <X className="w-5 h-5 text-[#787774]" />
+                  <X className="w-5 h-5 text-[#6B7280]" />
                 </button>
               </div>
 
             {/* Progress Bar */}
-            <div className="px-5 py-3 bg-[#F7F6F3] border-b border-[#E9E9E7]">
+            <div className="px-5 py-3 bg-[#F3F4F6] border-b border-[#E5E7EB]">
               <div className="flex items-center justify-between text-sm mb-2">
-                <span className="text-[#787774]">
+                <span className="text-[#6B7280]">
                   {checkedItems} of {totalItems} items checked
                 </span>
-                <span className="font-medium text-[#37352F]">
+                <span className="font-medium text-[#1F2937]">
                   {remainingItems} to buy
                 </span>
               </div>
-              <div className="w-full h-1.5 bg-[#E9E9E7] rounded-full overflow-hidden">
+              <div className="w-full h-1.5 bg-[#E5E7EB] rounded-full overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${(checkedItems / totalItems) * 100}%` }}
-                  className="h-full bg-[#37352F] rounded-full"
+                  className="h-full bg-[#1F2937] rounded-full"
                 />
               </div>
             </div>
@@ -141,15 +141,15 @@ export default function ShoppingListModal({
                       className="w-full flex items-center justify-between py-2 text-left"
                     >
                       <div className="flex items-center gap-2">
-                        <span className="font-medium text-[#37352F]">{category}</span>
-                        <span className="text-xs text-[#787774] bg-[#F7F6F3] px-2 py-0.5 rounded-full">
+                        <span className="font-medium text-[#1F2937]">{category}</span>
+                        <span className="text-xs text-[#6B7280] bg-[#F3F4F6] px-2 py-0.5 rounded-full">
                           {categoryChecked}/{items.length}
                         </span>
                       </div>
                       {isExpanded ? (
-                        <ChevronUp className="w-4 h-4 text-[#787774]" />
+                        <ChevronUp className="w-4 h-4 text-[#6B7280]" />
                       ) : (
-                        <ChevronDown className="w-4 h-4 text-[#787774]" />
+                        <ChevronDown className="w-4 h-4 text-[#6B7280]" />
                       )}
                     </button>
 
@@ -168,14 +168,14 @@ export default function ShoppingListModal({
                                   onClick={() => onToggleItem(item.id, !item.checked)}
                                   className={`w-full flex items-center gap-3 p-2 rounded-md transition-colors ${
                                     item.checked
-                                      ? 'bg-[#F7F6F3] text-[#787774]'
-                                      : 'hover:bg-[#F7F6F3] text-[#37352F]'
+                                      ? 'bg-[#F3F4F6] text-[#6B7280]'
+                                      : 'hover:bg-[#F3F4F6] text-[#1F2937]'
                                   }`}
                                 >
                                   <div
                                     className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${
                                       item.checked
-                                        ? 'bg-[#37352F] border-[#37352F]'
+                                        ? 'bg-[#1F2937] border-[#1F2937]'
                                         : 'border-[#D3D3D0]'
                                     }`}
                                   >
@@ -198,11 +198,11 @@ export default function ShoppingListModal({
             </div>
 
               {/* Footer */}
-              <div className="p-4 border-t border-[#E9E9E7] space-y-2">
+              <div className="p-4 border-t border-[#E5E7EB] space-y-2">
                 <button
                   onClick={onFinalize}
                   disabled={isLoading}
-                  className="w-full py-2.5 bg-[#37352F] text-white rounded-md font-medium hover:bg-[#2F2D2A] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full py-2.5 bg-[#1F2937] text-white rounded-md font-medium hover:bg-[#2F2D2A] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {isLoading ? (
                     <span>Processing...</span>
@@ -215,7 +215,7 @@ export default function ShoppingListModal({
                 </button>
                 <button
                   onClick={onClose}
-                  className="w-full py-2 text-[#787774] hover:text-[#37352F] font-medium transition-colors"
+                  className="w-full py-2 text-[#6B7280] hover:text-[#1F2937] font-medium transition-colors"
                 >
                   Continue Editing
                 </button>

@@ -33,50 +33,50 @@ export default function RecipeDetailModal({ isOpen, onClose, meal }: RecipeDetai
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.98, y: 10 }}
               transition={{ duration: 0.15 }}
-              className="w-full max-w-2xl max-h-[85vh] bg-[#FBFBFA] rounded-lg shadow-xl overflow-hidden flex flex-col border border-[#E9E9E7]"
+              className="w-full max-w-2xl max-h-[85vh] bg-[#F9FAFB] rounded-lg shadow-xl overflow-hidden flex flex-col border border-[#E5E7EB]"
             >
               {/* Header */}
-              <div className="flex items-start justify-between p-5 border-b border-[#E9E9E7]">
+              <div className="flex items-start justify-between p-5 border-b border-[#E5E7EB]">
                 <div className="flex-1 pr-4">
-                  <span className="text-xs font-medium text-[#787774] uppercase tracking-wide">
+                  <span className="text-xs font-medium text-[#6B7280] uppercase tracking-wide">
                     {meal.mealType}
                   </span>
-                  <h2 className="text-xl font-semibold text-[#37352F] mt-1">{meal.recipeName}</h2>
+                  <h2 className="text-xl font-semibold text-[#1F2937] mt-1">{meal.recipeName}</h2>
                   {meal.recipeDescription && (
-                    <p className="text-[#787774] text-sm mt-1">{meal.recipeDescription}</p>
+                    <p className="text-[#6B7280] text-sm mt-1">{meal.recipeDescription}</p>
                   )}
                 </div>
                 <button
                   onClick={onClose}
-                  className="p-1.5 hover:bg-[#F7F6F3] rounded transition-colors"
+                  className="p-1.5 hover:bg-[#F3F4F6] rounded transition-colors"
                 >
-                  <X className="w-5 h-5 text-[#787774]" />
+                  <X className="w-5 h-5 text-[#6B7280]" />
                 </button>
               </div>
 
             {/* Meta Info */}
-            <div className="flex items-center gap-4 px-5 py-3 bg-[#F7F6F3] border-b border-[#E9E9E7] text-sm">
-              <div className="flex items-center gap-1.5 text-[#37352F]">
-                <Clock className="w-4 h-4 text-[#787774]" />
+            <div className="flex items-center gap-4 px-5 py-3 bg-[#F3F4F6] border-b border-[#E5E7EB] text-sm">
+              <div className="flex items-center gap-1.5 text-[#1F2937]">
+                <Clock className="w-4 h-4 text-[#6B7280]" />
                 <span>Prep: {meal.prepTime}min</span>
               </div>
-              <div className="flex items-center gap-1.5 text-[#37352F]">
-                <Clock className="w-4 h-4 text-[#787774]" />
+              <div className="flex items-center gap-1.5 text-[#1F2937]">
+                <Clock className="w-4 h-4 text-[#6B7280]" />
                 <span>Cook: {meal.cookTime}min</span>
               </div>
-              <div className="flex items-center gap-1.5 text-[#37352F]">
-                <Users className="w-4 h-4 text-[#787774]" />
+              <div className="flex items-center gap-1.5 text-[#1F2937]">
+                <Users className="w-4 h-4 text-[#6B7280]" />
                 <span>{meal.servings} servings</span>
               </div>
               {meal.difficulty && (
-                <div className="flex items-center gap-1.5 text-[#37352F]">
-                  <ChefHat className="w-4 h-4 text-[#787774]" />
+                <div className="flex items-center gap-1.5 text-[#1F2937]">
+                  <ChefHat className="w-4 h-4 text-[#6B7280]" />
                   <span className="capitalize">{meal.difficulty}</span>
                 </div>
               )}
               {meal.cuisine && (
-                <div className="flex items-center gap-1.5 text-[#37352F]">
-                  <Globe className="w-4 h-4 text-[#787774]" />
+                <div className="flex items-center gap-1.5 text-[#1F2937]">
+                  <Globe className="w-4 h-4 text-[#6B7280]" />
                   <span>{meal.cuisine}</span>
                 </div>
               )}
@@ -87,14 +87,14 @@ export default function RecipeDetailModal({ isOpen, onClose, meal }: RecipeDetai
               <div className="grid md:grid-cols-2 gap-6">
                 {/* Ingredients */}
                 <div>
-                  <h3 className="font-medium text-[#37352F] mb-3 flex items-center gap-2 text-sm uppercase tracking-wide">
+                  <h3 className="font-medium text-[#1F2937] mb-3 flex items-center gap-2 text-sm uppercase tracking-wide">
                     Ingredients
                   </h3>
                   <ul className="space-y-2">
                     {(meal.ingredients || []).map((ing, index) => (
                       <li key={index} className="flex items-start gap-2 text-sm">
-                        <span className="w-1.5 h-1.5 bg-[#37352F] rounded-full mt-2 flex-shrink-0 opacity-40" />
-                        <span className="text-[#37352F]">
+                        <span className="w-1.5 h-1.5 bg-[#1F2937] rounded-full mt-2 flex-shrink-0 opacity-40" />
+                        <span className="text-[#1F2937]">
                           <span className="font-medium">{ing.amount} {ing.unit}</span>{' '}
                           {ing.name}
                         </span>
@@ -105,16 +105,16 @@ export default function RecipeDetailModal({ isOpen, onClose, meal }: RecipeDetai
 
                 {/* Instructions */}
                 <div>
-                  <h3 className="font-medium text-[#37352F] mb-3 flex items-center gap-2 text-sm uppercase tracking-wide">
+                  <h3 className="font-medium text-[#1F2937] mb-3 flex items-center gap-2 text-sm uppercase tracking-wide">
                     Instructions
                   </h3>
                   <ol className="space-y-3">
                     {(meal.instructions || []).map((step, index) => (
                       <li key={index} className="flex gap-3 text-sm">
-                        <span className="w-5 h-5 bg-[#F7F6F3] text-[#787774] rounded flex items-center justify-center text-xs font-medium flex-shrink-0 mt-0.5">
+                        <span className="w-5 h-5 bg-[#F3F4F6] text-[#6B7280] rounded flex items-center justify-center text-xs font-medium flex-shrink-0 mt-0.5">
                           {index + 1}
                         </span>
-                        <span className="text-[#37352F]">{step}</span>
+                        <span className="text-[#1F2937]">{step}</span>
                       </li>
                     ))}
                   </ol>
@@ -123,10 +123,10 @@ export default function RecipeDetailModal({ isOpen, onClose, meal }: RecipeDetai
             </div>
 
               {/* Footer */}
-              <div className="p-4 border-t border-[#E9E9E7]">
+              <div className="p-4 border-t border-[#E5E7EB]">
                 <button
                   onClick={onClose}
-                  className="w-full py-2.5 bg-[#37352F] text-white rounded-md font-medium hover:bg-[#2F2D2A] transition-colors"
+                  className="w-full py-2.5 bg-[#1F2937] text-white rounded-md font-medium hover:bg-[#2F2D2A] transition-colors"
                 >
                   Close
                 </button>

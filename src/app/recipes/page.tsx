@@ -36,6 +36,16 @@ export default function RecipesPage() {
   }, []);
 
   const handleSaveRecipes = async (parsedRecipes: any[]) => {
+    // Fetch user preferences to get target language
+    let targetLanguage = 'en';
+    try {
+      const prefsResponse = await fetch('/api/settings?userId=demo-user&familyId=demo-family');
+      const prefsData = await prefsResponse.json();
+      targetLanguage = prefsData.user?.preferences?.targetLanguage || 'en';
+    } catch (error) {
+      console.error('Failed to fetch language preference, using English:', error);
+    }
+
     for (const recipe of parsedRecipes) {
       await fetch('/api/recipes', {
         method: 'POST',
@@ -44,7 +54,8 @@ export default function RecipesPage() {
           recipe,
           familyId: 'demo-family',
           userId: 'demo-user',
-          userName: 'Demo User'
+          userName: 'Demo User',
+          targetLanguage
         })
       });
     }
@@ -85,7 +96,7 @@ export default function RecipesPage() {
   });
 
   return (
-    <div className="min-h-screen bg-[#FBFBFA]">
+    <div className="min-h-screen bg-[#F9FAFB]">
       <Navigation />
 
       <main className="max-w-5xl mx-auto px-6 py-8">
@@ -94,15 +105,15 @@ export default function RecipesPage() {
           <div>
             <div className="flex items-center gap-3 mb-1">
               <span className="text-3xl">📖</span>
-              <h1 className="text-3xl font-bold text-[#37352F]">My Recipes</h1>
+              <h1 className="text-3xl font-bold text-[#1F2937]">My Recipes</h1>
             </div>
-            <p className="text-[#787774] ml-12">
+            <p className="text-[#6B7280] ml-12">
               {recipes.length} recipe{recipes.length !== 1 ? 's' : ''} saved
             </p>
           </div>
           <button
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-[#37352F] text-white rounded-md font-medium hover:bg-[#2F2D2A] transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-[#1F2937] text-white rounded-md font-medium hover:bg-[#2F2D2A] transition-colors"
           >
             <Plus className="w-4 h-4" />
             Add Recipe
@@ -111,21 +122,21 @@ export default function RecipesPage() {
 
         {/* Search */}
         <div className="relative mb-8">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#787774]" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B7280]" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search recipes by name, cuisine, or tags..."
-            className="w-full pl-10 pr-4 py-2.5 bg-white border border-[#E9E9E7] rounded-md focus:border-[#37352F] focus:outline-none text-sm placeholder:text-[#787774]"
+            className="w-full pl-10 pr-4 py-2.5 bg-white border border-[#E5E7EB] rounded-md focus:border-[#1F2937] focus:outline-none text-sm placeholder:text-[#6B7280]"
           />
         </div>
 
         {/* Content */}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20">
-            <Loader2 className="w-6 h-6 text-[#787774] animate-spin mb-4" />
-            <p className="text-[#787774] text-sm">Loading recipes...</p>
+            <Loader2 className="w-6 h-6 text-[#6B7280] animate-spin mb-4" />
+            <p className="text-[#6B7280] text-sm">Loading recipes...</p>
           </div>
         ) : recipes.length === 0 ? (
           <motion.div
@@ -134,13 +145,13 @@ export default function RecipesPage() {
             className="text-center py-16"
           >
             <div className="text-5xl mb-4">📝</div>
-            <h2 className="text-xl font-semibold text-[#37352F] mb-2">No recipes yet</h2>
-            <p className="text-[#787774] mb-6 max-w-md mx-auto">
+            <h2 className="text-xl font-semibold text-[#1F2937] mb-2">No recipes yet</h2>
+            <p className="text-[#6B7280] mb-6 max-w-md mx-auto">
               Start building your recipe collection by adding your first recipe!
             </p>
             <button
               onClick={() => setShowAddModal(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-[#37352F] text-white rounded-md font-medium hover:bg-[#2F2D2A] transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-[#1F2937] text-white rounded-md font-medium hover:bg-[#2F2D2A] transition-colors"
             >
               <Plus className="w-4 h-4" />
               Add Your First Recipe
@@ -149,12 +160,12 @@ export default function RecipesPage() {
         ) : filteredRecipes.length === 0 ? (
           <div className="text-center py-16">
             <div className="text-5xl mb-4">🔍</div>
-            <h2 className="text-xl font-semibold text-[#37352F] mb-2">No matches found</h2>
-            <p className="text-[#787774]">
+            <h2 className="text-xl font-semibold text-[#1F2937] mb-2">No matches found</h2>
+            <p className="text-[#6B7280]">
               Try a different search term or{' '}
               <button
                 onClick={() => setSearchQuery('')}
-                className="text-[#2383E2] hover:underline"
+                className="text-[#0EA5E9] hover:underline"
               >
                 clear the search
               </button>

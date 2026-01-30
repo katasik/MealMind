@@ -29,10 +29,10 @@ export default function RecipeCard({ recipe, onView, onDelete, canDelete }: Reci
   return (
     <div
       onClick={() => onView(recipe)}
-      className="bg-white border border-[#E9E9E7] rounded-lg overflow-hidden hover:border-[#D3D3D0] hover:shadow-sm transition-all cursor-pointer flex flex-col"
+      className="bg-white border border-[#E5E7EB] rounded-lg overflow-hidden hover:border-[#D3D3D0] hover:shadow-sm transition-all cursor-pointer flex flex-col"
     >
       {/* Image */}
-      <div className="h-40 w-full bg-[#F7F6F3] overflow-hidden relative">
+      <div className="h-40 w-full bg-[#F3F4F6] overflow-hidden relative">
         {recipe.imageUrl ? (
           <img
             src={recipe.imageUrl}
@@ -45,7 +45,7 @@ export default function RecipeCard({ recipe, onView, onDelete, canDelete }: Reci
             }}
           />
         ) : null}
-        <div className={`absolute inset-0 bg-gradient-to-br from-[#F7F6F3] to-[#E9E9E7] flex items-center justify-center ${recipe.imageUrl ? 'hidden' : ''}`}>
+        <div className={`absolute inset-0 bg-gradient-to-br from-[#F3F4F6] to-[#E5E7EB] flex items-center justify-center ${recipe.imageUrl ? 'hidden' : ''}`}>
           <span className="text-5xl opacity-40">🍽️</span>
         </div>
       </div>
@@ -55,11 +55,11 @@ export default function RecipeCard({ recipe, onView, onDelete, canDelete }: Reci
         {/* Tags row */}
         <div className="flex items-center gap-2 mb-2 flex-wrap">
           {recipe.cuisine && (
-            <span className="text-[10px] font-medium text-[#787774] bg-[#F7F6F3] px-2 py-0.5 rounded">
+            <span className="text-[10px] font-medium text-[#6B7280] bg-[#F3F4F6] px-2 py-0.5 rounded">
               {recipe.cuisine}
             </span>
           )}
-          <span className={`text-[10px] font-medium px-2 py-0.5 rounded capitalize ${difficultyStyles[recipe.difficulty] || 'bg-[#F7F6F3] text-[#787774]'}`}>
+          <span className={`text-[10px] font-medium px-2 py-0.5 rounded capitalize ${difficultyStyles[recipe.difficulty] || 'bg-[#F3F4F6] text-[#6B7280]'}`}>
             {recipe.difficulty}
           </span>
           {recipe.mealTypes && recipe.mealTypes.slice(0, 2).map((type) => (
@@ -70,17 +70,17 @@ export default function RecipeCard({ recipe, onView, onDelete, canDelete }: Reci
         </div>
 
         {/* Title */}
-        <h3 className="font-semibold text-[#37352F] mb-1 line-clamp-2">
+        <h3 className="font-semibold text-[#1F2937] mb-1 line-clamp-2">
           {recipe.name}
         </h3>
 
         {/* Description */}
-        <p className="text-xs text-[#787774] mb-3 line-clamp-2 flex-1">
+        <p className="text-xs text-[#6B7280] mb-3 line-clamp-2 flex-1">
           {recipe.description || 'A delicious recipe to try!'}
         </p>
 
         {/* Stats */}
-        <div className="flex items-center gap-3 text-xs text-[#787774] mb-3">
+        <div className="flex items-center gap-3 text-xs text-[#6B7280] mb-3">
           <div className="flex items-center gap-1">
             <Clock className="w-3.5 h-3.5" />
             <span>{totalTime} min</span>
@@ -95,12 +95,12 @@ export default function RecipeCard({ recipe, onView, onDelete, canDelete }: Reci
         {recipe.tags && recipe.tags.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-3">
             {recipe.tags.slice(0, 3).map((tag, i) => (
-              <span key={i} className="text-[10px] px-2 py-0.5 bg-[#F7F6F3] text-[#787774] rounded">
+              <span key={i} className="text-[10px] px-2 py-0.5 bg-[#F3F4F6] text-[#6B7280] rounded">
                 {tag}
               </span>
             ))}
             {recipe.tags.length > 3 && (
-              <span className="text-[10px] px-2 py-0.5 bg-[#F7F6F3] text-[#9B9A97] rounded">
+              <span className="text-[10px] px-2 py-0.5 bg-[#F3F4F6] text-[#9CA3AF] rounded">
                 +{recipe.tags.length - 3}
               </span>
             )}
@@ -108,8 +108,8 @@ export default function RecipeCard({ recipe, onView, onDelete, canDelete }: Reci
         )}
 
         {/* Footer */}
-        <div className="flex justify-between items-center pt-3 border-t border-[#E9E9E7] mt-auto">
-          <div className="text-[10px] text-[#9B9A97]">
+        <div className="flex justify-between items-center pt-3 border-t border-[#E5E7EB] mt-auto">
+          <div className="text-[10px] text-[#9CA3AF]">
             {recipe.addedByUserName || 'Unknown'}
           </div>
           {canDelete && onDelete && (
@@ -118,7 +118,7 @@ export default function RecipeCard({ recipe, onView, onDelete, canDelete }: Reci
                 e.stopPropagation();
                 onDelete(recipe.id);
               }}
-              className="p-1.5 text-[#9B9A97] hover:text-[#EB5757] hover:bg-[#FDEBEC] rounded transition-colors"
+              className="p-1.5 text-[#9CA3AF] hover:text-[#EB5757] hover:bg-[#FDEBEC] rounded transition-colors"
               title="Delete recipe"
             >
               <Trash2 className="w-3.5 h-3.5" />
