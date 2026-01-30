@@ -621,6 +621,72 @@ ${regenerateMeal ? 'Generate the single replacement meal now:' : `Generate the c
   private generateId(): string {
     return `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
   }
+
+  /**
+   * Translate a recipe to the target language
+   */
+  async translateRecipe(
+    recipe: Omit<Recipe, 'id' | 'createdAt'>,
+    targetLanguage: SupportedLanguage
+  ): Promise<Omit<Recipe, 'id' | 'createdAt'>> {
+    // Skip translation if target is English
+    if (targetLanguage === 'en') {
+      return recipe;
+    }
+
+    const languageName = LANGUAGE_NAMES[targetLanguage];
+
+    const prompt = `Translate this recipe to ${languageName}.
+
+CRITICAL RULES:
+- Translate recipe name, description, ingredient names, and instructions to ${languageName}
+- Keep ingredient amounts and units AS-IS (preserve numbers and measurement units)
+- Keep the same JSON structure
+- Preserve cuisine names in recognizable form (e.g., "Italian" → "Olasz" in Hungarian)
+- Do NOT translate proper nouns (brand names, specific ingredient names like "Sriracha")
+
+Recipe to translate:
+${JSON.stringify(recipe, null, 2)}
+
+Return ONLY valid JSON (no markdown, no code blocks) in this exact format:
+{
+  "name": "translated recipe name",
+  "description": "translated description",
+  "ingredients": [
+    {"name": "translated ingredient name", "amount": "keep original", "unit": "keep original", "category": "translated category"}
+  ],
+  "instructions": ["translated step 1", "translated step 2"],
+  "cuisine": "translated cuisine",
+  "tags": ["translated", "tags"]
+}`;
+
+    try {
+      const result = await model.generateContent(prompt);
+      const response = result.response.text();
+
+      // Clean and parse response
+      const cleanedResponse = response
+        .replace(/```json\s*/g, '')
+        .replace(/```\s*/g, '')
+        .trim();
+
+      const translated = JSON.parse(cleanedResponse);
+
+      return {
+        ...recipe,
+        name: translated.name || recipe.name,
+        description: translated.description || recipe.description,
+        ingredients: translated.ingredients || recipe.ingredients,
+        instructions: translated.instructions || recipe.instructions,
+        cuisine: translated.cuisine || recipe.cuisine,
+        tags: translated.tags || recipe.tags
+      };
+    } catch (error) {
+      console.error('[Translation] Error translating recipe:', error);
+      // Return original recipe on error rather than failing
+      return recipe;
+    }
+  }
 }
 
 export const geminiService = new GeminiService();

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { firebaseService } from '../../../lib/firebase';
+import { geminiService } from '../../../lib/gemini';
+import type { SupportedLanguage } from '../../../types';
 
 // GET - List all recipes for a family
 export async function GET(request: NextRequest) {
@@ -27,7 +29,13 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { recipe, familyId = 'demo-family', userId = 'demo-user', userName = 'Demo User' } = body;
+    const {
+      recipe,
+      familyId = 'demo-family',
+      userId = 'demo-user',
+      userName = 'Demo User',
+      targetLanguage = 'en' as SupportedLanguage
+    } = body;
 
     if (!recipe || !recipe.name || !recipe.ingredients) {
       return NextResponse.json(
@@ -37,7 +45,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Ensure required fields have defaults and remove undefined values
-    const recipeToSave = {
+    let recipeToSave = {
       name: recipe.name,
       description: recipe.description || '',
       ingredients: recipe.ingredients || [],
@@ -52,6 +60,17 @@ export async function POST(request: NextRequest) {
       ...(recipe.nutritionalInfo ? { nutritionalInfo: recipe.nutritionalInfo } : {})
     };
 
+    // Translate recipe if target language is not English
+    if (targetLanguage && targetLanguage !== 'en') {
+      console.log(`[Recipe Save] Translating recipe to ${targetLanguage}`);
+      try {
+        recipeToSave = await geminiService.translateRecipe(recipeToSave, targetLanguage);
+      } catch (translationError) {
+        console.error('[Recipe Save] Translation failed, saving original:', translationError);
+        // Continue with original recipe if translation fails
+      }
+    }
+
     const recipeId = await firebaseService.saveWebRecipe(
       familyId,
       recipeToSave,
@@ -61,7 +80,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       recipeId,
-      message: `Recipe "${recipe.name}" saved successfully`
+      message: `Recipe "${recipeToSave.name}" saved successfully`
     });
 
   } catch (error) {

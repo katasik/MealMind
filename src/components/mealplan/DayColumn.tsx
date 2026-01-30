@@ -49,23 +49,23 @@ export default function DayColumn({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: dayIndex * 0.05 }}
       className={`flex flex-col w-[260px] flex-shrink-0 ${
-        isToday ? 'ring-2 ring-[#2383E2] ring-offset-2' : ''
-      } ${isOver && isDraft ? 'ring-2 ring-[#10B981] ring-offset-2' : ''} bg-white rounded-lg border border-[#E9E9E7] overflow-hidden`}
+        isToday ? 'ring-2 ring-[#0EA5E9]' : ''
+      } ${isOver && isDraft ? 'ring-2 ring-[#10B981]' : ''} bg-white rounded-lg border border-[#E5E7EB] overflow-hidden`}
     >
       {/* Day Header - Notion style */}
-      <div className={`px-3 py-2.5 text-center border-b border-[#E9E9E7] ${
-        isToday ? 'bg-[#E8F0FE]' : 'bg-[#F7F6F3]'
+      <div className={`px-3 py-2.5 text-center border-b border-[#E5E7EB] ${
+        isToday ? 'bg-[#E8F0FE]' : 'bg-[#F3F4F6]'
       }`}>
-        <div className={`font-medium text-sm ${isToday ? 'text-[#2383E2]' : 'text-[#37352F]'}`}>
+        <div className={`font-medium text-sm ${isToday ? 'text-[#0EA5E9]' : 'text-[#1F2937]'}`}>
           {day.dayName}
         </div>
-        <div className={`text-xs ${isToday ? 'text-[#2383E2]/70' : 'text-[#787774]'}`}>
+        <div className={`text-xs ${isToday ? 'text-[#0EA5E9]/70' : 'text-[#6B7280]'}`}>
           {dateStr}
         </div>
       </div>
 
       {/* Meals */}
-      <div className="flex-1 p-3 space-y-3 overflow-y-auto max-h-[600px] bg-[#FBFBFA]">
+      <div className="flex-1 p-3 space-y-3 overflow-y-auto max-h-[600px] bg-[#F9FAFB]">
         {sortedMeals.length > 0 ? (
           sortedMeals.map((meal) => (
             <MealCard
@@ -83,7 +83,7 @@ export default function DayColumn({
             />
           ))
         ) : (
-          <div className="text-center text-[#787774] text-sm py-4">
+          <div className="text-center text-[#6B7280] text-sm py-4">
             No meals planned
           </div>
         )}

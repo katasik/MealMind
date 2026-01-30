@@ -511,7 +511,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FBFBFA]">
+    <div className="min-h-screen bg-[#F9FAFB]">
       <Navigation />
 
       <main className="max-w-6xl mx-auto px-6 py-8">
@@ -519,31 +519,31 @@ export default function HomePage() {
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-1">
             <span className="text-3xl">🍽️</span>
-            <h1 className="text-3xl font-bold text-[#37352F]">Meal Plan</h1>
+            <h1 className="text-3xl font-bold text-[#1F2937]">Meal Plan</h1>
           </div>
-          <p className="text-[#787774] ml-12">
+          <p className="text-[#6B7280] ml-12">
             Plan your meals with AI assistance
           </p>
         </div>
 
         {/* Controls Bar - Notion style */}
-        <div className="flex flex-wrap items-center gap-3 mb-6 pb-4 border-b border-[#E9E9E7]">
+        <div className="flex flex-wrap items-center gap-3 mb-6 pb-4 border-b border-[#E5E7EB]">
           {/* Date Navigation */}
-          <div className="flex items-center bg-white border border-[#E9E9E7] rounded-md">
+          <div className="flex items-center bg-white border border-[#E5E7EB] rounded-md">
             <button
               onClick={goToPreviousWeek}
-              className="p-2 hover:bg-[#F7F6F3] transition-colors rounded-l-md"
+              className="p-2 hover:bg-[#F3F4F6] transition-colors rounded-l-md"
             >
-              <ChevronLeft className="w-4 h-4 text-[#787774]" />
+              <ChevronLeft className="w-4 h-4 text-[#6B7280]" />
             </button>
-            <span className="px-3 py-1.5 text-sm text-[#37352F] font-medium min-w-[140px] text-center">
+            <span className="px-3 py-1.5 text-sm text-[#1F2937] font-medium min-w-[140px] text-center">
               {mealPlan ? formatDateRange(mealPlan.weekStartDate, mealPlan.days.length) : formatDateRange(startDate, numberOfDays)}
             </span>
             <button
               onClick={goToNextWeek}
-              className="p-2 hover:bg-[#F7F6F3] transition-colors rounded-r-md"
+              className="p-2 hover:bg-[#F3F4F6] transition-colors rounded-r-md"
             >
-              <ChevronRight className="w-4 h-4 text-[#787774]" />
+              <ChevronRight className="w-4 h-4 text-[#6B7280]" />
             </button>
           </div>
 
@@ -555,7 +555,7 @@ export default function HomePage() {
               <button
                 onClick={approvePlan}
                 disabled={isApproving}
-                className="flex items-center gap-2 px-3 py-1.5 text-sm bg-[#2383E2] text-white rounded-md hover:bg-[#1B6EC2] transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 px-3 py-1.5 text-sm bg-[#0EA5E9] text-white rounded-md hover:bg-[#1B6EC2] transition-colors disabled:opacity-50"
               >
                 {isApproving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                 Approve
@@ -575,14 +575,14 @@ export default function HomePage() {
             <>
               <button
                 onClick={() => setShowShoppingModal(true)}
-                className="flex items-center gap-2 px-3 py-1.5 text-sm bg-white text-[#37352F] border border-[#E9E9E7] rounded-md hover:bg-[#F7F6F3] transition-colors"
+                className="flex items-center gap-2 px-3 py-1.5 text-sm bg-white text-[#1F2937] border border-[#E5E7EB] rounded-md hover:bg-[#F3F4F6] transition-colors"
               >
                 <ShoppingCart className="w-4 h-4" />
                 Shopping List
               </button>
               <button
                 onClick={exportToCalendar}
-                className="flex items-center gap-2 px-3 py-1.5 text-sm bg-white text-[#37352F] border border-[#E9E9E7] rounded-md hover:bg-[#F7F6F3] transition-colors"
+                className="flex items-center gap-2 px-3 py-1.5 text-sm bg-white text-[#1F2937] border border-[#E5E7EB] rounded-md hover:bg-[#F3F4F6] transition-colors"
               >
                 <Download className="w-4 h-4" />
                 Export
@@ -601,25 +601,25 @@ export default function HomePage() {
 
         {/* Settings Panel - Notion style */}
         <div className="mb-6">
-          <div className="bg-white border border-[#E9E9E7] rounded-lg p-4">
+          <div className="bg-white border border-[#E5E7EB] rounded-lg p-4">
             <div className="grid md:grid-cols-3 gap-6">
               {/* Start Date Picker */}
               <div>
-                <label className="block text-sm font-medium text-[#37352F] mb-2">
+                <label className="block text-sm font-medium text-[#1F2937] mb-2">
                   Start date
                 </label>
                 <input
                   type="date"
                   value={startDate}
                   onChange={(e) => handleDateSelect(e.target.value)}
-                  className="w-full px-3 py-2 rounded-md border border-[#E9E9E7] text-sm text-[#37352F] bg-white hover:border-[#D3D3D0] focus:outline-none focus:ring-2 focus:ring-[#2383E2] focus:border-transparent transition-colors"
+                  className="w-full px-3 py-2 rounded-md border border-[#E5E7EB] text-sm text-[#1F2937] bg-white hover:border-[#D3D3D0] focus:outline-none focus:ring-2 focus:ring-[#0EA5E9] focus:border-transparent transition-colors"
                 />
-                <p className="text-xs text-[#787774] mt-1">Week starts on Monday</p>
+                <p className="text-xs text-[#6B7280] mt-1">Week starts on Monday</p>
               </div>
 
               {/* Number of Days */}
               <div>
-                <label className="block text-sm font-medium text-[#37352F] mb-2">
+                <label className="block text-sm font-medium text-[#1F2937] mb-2">
                   Number of days
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -629,8 +629,8 @@ export default function HomePage() {
                       onClick={() => setNumberOfDays(day)}
                       className={`w-10 h-10 rounded-md text-sm font-medium transition-colors ${
                         numberOfDays === day
-                          ? 'bg-[#37352F] text-white'
-                          : 'bg-[#F7F6F3] text-[#37352F] hover:bg-[#E9E9E7]'
+                          ? 'bg-[#1F2937] text-white'
+                          : 'bg-[#F3F4F6] text-[#1F2937] hover:bg-[#E5E7EB]'
                       }`}
                     >
                       {day}
@@ -641,7 +641,7 @@ export default function HomePage() {
 
               {/* Meals to include */}
               <div>
-                <label className="block text-sm font-medium text-[#37352F] mb-2">
+                <label className="block text-sm font-medium text-[#1F2937] mb-2">
                   Meals to include
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -651,8 +651,8 @@ export default function HomePage() {
                       onClick={() => toggleMeal(option.value)}
                       className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                         selectedMeals.includes(option.value)
-                          ? 'bg-[#37352F] text-white'
-                          : 'bg-[#F7F6F3] text-[#37352F] hover:bg-[#E9E9E7]'
+                          ? 'bg-[#1F2937] text-white'
+                          : 'bg-[#F3F4F6] text-[#1F2937] hover:bg-[#E5E7EB]'
                       }`}
                     >
                       {option.label}
@@ -663,11 +663,11 @@ export default function HomePage() {
             </div>
 
             {/* Generate Button */}
-            <div className="mt-4 pt-4 border-t border-[#E9E9E7]">
+            <div className="mt-4 pt-4 border-t border-[#E5E7EB]">
               <button
                 onClick={generatePlan}
                 disabled={isGenerating || selectedMeals.length === 0}
-                className="flex items-center gap-2 px-4 py-2 bg-[#37352F] text-white rounded-md hover:bg-[#2F2D2A] transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 px-4 py-2 bg-[#1F2937] text-white rounded-md hover:bg-[#2F2D2A] transition-colors disabled:opacity-50"
               >
                 {isGenerating ? (
                   <>
@@ -715,7 +715,7 @@ export default function HomePage() {
         {/* Main Content */}
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-6 h-6 text-[#787774] animate-spin" />
+            <Loader2 className="w-6 h-6 text-[#6B7280] animate-spin" />
           </div>
         ) : mealPlan ? (
           <DndContext
@@ -742,9 +742,9 @@ export default function HomePage() {
             </div>
             <DragOverlay>
               {activeDragMeal ? (
-                <div className="bg-white border-2 border-[#2383E2] rounded-md p-3 shadow-lg opacity-90 w-[220px]">
-                  <div className="font-medium text-sm text-[#37352F]">{activeDragMeal.recipeName}</div>
-                  <div className="text-xs text-[#787774] mt-1">{activeDragMeal.recipeDescription}</div>
+                <div className="bg-white border-2 border-[#0EA5E9] rounded-md p-3 shadow-lg opacity-90 w-[220px]">
+                  <div className="font-medium text-sm text-[#1F2937]">{activeDragMeal.recipeName}</div>
+                  <div className="text-xs text-[#6B7280] mt-1">{activeDragMeal.recipeDescription}</div>
                 </div>
               ) : null}
             </DragOverlay>
@@ -757,10 +757,10 @@ export default function HomePage() {
             className="text-center py-16"
           >
             <div className="text-5xl mb-4">📅</div>
-            <h2 className="text-xl font-semibold text-[#37352F] mb-2">
+            <h2 className="text-xl font-semibold text-[#1F2937] mb-2">
               No meal plan yet
             </h2>
-            <p className="text-[#787774] max-w-md mx-auto">
+            <p className="text-[#6B7280] max-w-md mx-auto">
               Configure your preferences above and generate a personalized meal plan.
             </p>
           </motion.div>
@@ -772,7 +772,7 @@ export default function HomePage() {
             <button
               onClick={generatePlan}
               disabled={isGenerating}
-              className="inline-flex items-center gap-2 px-3 py-1.5 text-sm text-[#787774] hover:text-[#37352F] hover:bg-[#F7F6F3] rounded-md transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-3 py-1.5 text-sm text-[#6B7280] hover:text-[#1F2937] hover:bg-[#F3F4F6] rounded-md transition-colors disabled:opacity-50"
             >
               {isGenerating ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
