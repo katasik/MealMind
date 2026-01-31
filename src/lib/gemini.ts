@@ -549,6 +549,15 @@ USER PREFERENCES:
 - Cuisine preferences: ${preferences.cuisinePreferences?.join(', ') || 'any'}
 - Cooking time preference: ${preferences.cookingTime || 'moderate'}
 
+COOKING TIME REQUIREMENT (CRITICAL):
+The user has selected "${preferences.cookingTime || 'moderate'}" cooking time preference.
+You MUST respect this constraint for ALL meals (except breakfast which should always be quick):
+- "quick": Total time (prep + cook) MUST be under 30 minutes
+- "moderate": Total time (prep + cook) MUST be 30-60 minutes
+- "extended": Total time (prep + cook) can be 60+ minutes
+- "any": No time limit
+This is a HARD REQUIREMENT - do not exceed the time limits for the selected preference.
+
 SAVED RECIPES (PRIORITIZE THESE - use their exact IDs when including them):
 ${savedRecipesList}
 
@@ -562,11 +571,12 @@ REQUIREMENTS:
 4. When using a saved recipe, include its exact ID from the list above
 5. Generate new recipes for slots where no saved recipe fits
 6. NO REPEAT MEALS in the plan (variety is important)
-7. Breakfast should be quick (<20 min total time)
+7. Breakfast should ALWAYS be quick (<20 min total time)
 8. Balance nutrition across the days
 9. Include at least one "easy" meal per day
 10. Mix cuisines throughout for variety
-11. Respect cooking time preference: quick (<30min), moderate (30-60min), extended (60+min)
+11. CRITICAL: Strictly respect the cooking time preference specified above - this is non-negotiable
+12. Verify each recipe's total time (prepTime + cookTime) matches the time constraint before including it
 
 IMPORTANT INGREDIENT FORMAT:
 - "name" must be ONLY the ingredient name (e.g., "chicken breast", "olive oil", "garlic"), NO descriptions or preparation methods

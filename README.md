@@ -126,10 +126,24 @@ TELEGRAM_BOT_TOKEN=your_bot_token_from_botfather
 
 ### 3. Set the Webhook
 
-After deploying to Vercel, set the webhook URL so Telegram knows where to send messages:
+After deploying to Vercel, set the webhook URL so Telegram knows where to send messages.
 
+**Option A: Use the setup script (recommended)**
 ```bash
-curl "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/setWebhook?url=https://your-site.vercel.app/api/telegram/webhook"
+./scripts/setup-telegram-webhook.sh
+```
+
+This interactive script will:
+- Read your bot token from `.env`
+- Ask for your Vercel URL
+- Set up the webhook automatically
+- Verify the connection
+
+**Option B: Manual setup**
+```bash
+curl -X POST "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/setWebhook" \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://your-site.vercel.app/api/telegram/webhook"}'
 ```
 
 Replace:
@@ -138,17 +152,36 @@ Replace:
 
 You should receive a response: `{"ok":true,"result":true,"description":"Webhook was set"}`
 
-### 4. Start Using Your Bot
+**Verify webhook status:**
+```bash
+curl "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getWebhookInfo"
+```
 
+### 4. Connect Your Account
+
+1. Open the MealMind web app and go to **Settings → Telegram Integration**
+2. Click **"Open Telegram & Connect"**
+3. This will open Telegram and automatically link your account
+
+**OR** manually in Telegram:
 1. Find your bot on Telegram by searching for its username
-2. Start a chat with `/start`
-3. Try commands:
-   - `/today` - See today's meal
-   - `/week` - View full week plan
-   - `/list` - Get shopping list
-   - Ask questions: "What should we make for dinner?" or "Do I need eggs?"
+2. Send: `/start demo` (for demo mode) or `/start family_your-family-id`
 
-**Note:** The bot requires an approved meal plan to function. Generate and approve a meal plan in the web app first.
+### 5. Start Using Your Bot
+
+Try these commands:
+- `/today` - See today's meal
+- `/week` - View full week plan
+- `/list` - Get shopping list
+- Ask questions: "What should we make for dinner?" or "Do I need eggs?"
+
+**Webhook Features Available:**
+- ✅ View meal plans and shopping lists
+- ✅ Ask questions about meals and ingredients
+- ✅ Get shopping reminders
+- ❌ Recipe voting and PDF uploads (available when running `npm run bot` locally)
+
+**Note:** Generate and approve a meal plan in the web app first.
 
 ## Architecture
 
