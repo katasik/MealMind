@@ -27,6 +27,11 @@ import type {
   MealPlanShoppingList,
   MealPlanShoppingItem
 } from '../types';
+import {
+  DEMO_FAMILY_ID,
+  generateDemoMealPlan,
+  generateDemoShoppingList
+} from './demo-data';
 
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY,
@@ -399,7 +404,7 @@ class FirebaseService {
     }));
   }
 
-  async registerTelegramChat(chatId: number, username: string): Promise<void> {
+  async registerTelegramChat(chatId: number, username: string, familyId?: string): Promise<void> {
     if (this.mockMode || !this.db) {
       console.log('Telegram chat registered (mock):', chatId);
       return;
@@ -411,15 +416,49 @@ class FirebaseService {
     if (!docSnap.exists()) {
       await setDoc(docRef, {
         username,
+        familyId: familyId || null,
         registeredAt: new Date(),
         updatedAt: new Date()
       });
     } else {
-      await setDoc(docRef, {
+      const updateData: any = {
         username,
         updatedAt: new Date()
-      }, { merge: true });
+      };
+      if (familyId) {
+        updateData.familyId = familyId;
+      }
+      await setDoc(docRef, updateData, { merge: true });
     }
+  }
+
+  async linkTelegramChatToFamily(chatId: number, familyId: string): Promise<void> {
+    if (this.mockMode || !this.db) {
+      console.log('Telegram chat linked to family (mock):', chatId, familyId);
+      return;
+    }
+
+    const docRef = doc(this.db, 'telegramChats', String(chatId));
+    await setDoc(docRef, {
+      familyId,
+      updatedAt: new Date()
+    }, { merge: true });
+    console.log(`[Firebase] Linked chat ${chatId} to family ${familyId}`);
+  }
+
+  async getTelegramChatFamilyId(chatId: number): Promise<string | null> {
+    if (this.mockMode || !this.db) {
+      console.log('Getting telegram chat family ID (mock):', chatId);
+      return null;
+    }
+
+    const docRef = doc(this.db, 'telegramChats', String(chatId));
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      return docSnap.data().familyId || null;
+    }
+    return null;
   }
 
   // Telegram Recipe Operations
@@ -683,6 +722,15 @@ class FirebaseService {
   }
 
   async getMealPlan(familyId: string, weekStartDate: string): Promise<MealPlan | null> {
+    // Return demo data for demo family
+    if (familyId === DEMO_FAMILY_ID) {
+      const demoMealPlan = generateDemoMealPlan();
+      if (demoMealPlan.weekStartDate === weekStartDate) {
+        return demoMealPlan;
+      }
+      return null;
+    }
+
     if (this.mockMode || !this.db) {
       return this.mockMealPlans.find(
         mp => mp.familyId === familyId && mp.weekStartDate === weekStartDate
@@ -845,6 +893,15 @@ class FirebaseService {
   }
 
   async getMealPlanShoppingListByPlanId(mealPlanId: string): Promise<MealPlanShoppingList | null> {
+    // Return demo shopping list for demo meal plan
+    if (mealPlanId.startsWith('demo-mealplan-')) {
+      const demoMealPlan = generateDemoMealPlan();
+      if (mealPlanId === demoMealPlan.id) {
+        return generateDemoShoppingList(demoMealPlan);
+      }
+      return null;
+    }
+
     if (this.mockMode || !this.db) {
       return this.mockMealPlanShoppingLists.find(l => l.mealPlanId === mealPlanId) || null;
     }

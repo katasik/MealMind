@@ -125,6 +125,84 @@ function isGroupChat(ctx: Context): boolean {
   return ctx.chat?.type === 'group' || ctx.chat?.type === 'supergroup';
 }
 
+// Get current week's start date (Monday)
+function getCurrentWeekStartDate(): string {
+  const today = new Date();
+  const day = today.getDay();
+  const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+  const monday = new Date(today.setDate(diff));
+  return monday.toISOString().split('T')[0];
+}
+
+// Load current week's meal plan for a chat
+async function getCurrentWeekMealPlan(chatId: number) {
+  const familyId = await firebaseService.getTelegramChatFamilyId(chatId);
+  if (!familyId) {
+    return null;
+  }
+
+  const weekStartDate = getCurrentWeekStartDate();
+  const mealPlan = await firebaseService.getMealPlan(familyId, weekStartDate);
+
+  return mealPlan;
+}
+
+// Load shopping list for current week's meal plan
+async function getCurrentWeekShoppingList(chatId: number) {
+  const mealPlan = await getCurrentWeekMealPlan(chatId);
+  if (!mealPlan) {
+    return null;
+  }
+
+  const shoppingList = await firebaseService.getMealPlanShoppingListByPlanId(mealPlan.id);
+  return shoppingList;
+}
+
+// Format meal plan context for AI
+function formatMealPlanContext(mealPlan: any, shoppingList: any): string {
+  if (!mealPlan) {
+    return 'No meal plan is currently set up for this week.';
+  }
+
+  const today = new Date().toISOString().split('T')[0];
+  let context = '\n\nCURRENT WEEK\'S MEAL PLAN:\n';
+
+  for (const day of mealPlan.days) {
+    const isToday = day.date === today;
+    context += `\n${day.dayName}${isToday ? ' (TODAY)' : ''}:\n`;
+    for (const meal of day.meals) {
+      context += `  ${meal.mealType}: ${meal.recipeName}\n`;
+      if (meal.recipeDescription) {
+        context += `    Description: ${meal.recipeDescription}\n`;
+      }
+      if (meal.ingredients && meal.ingredients.length > 0) {
+        context += `    Ingredients: ${meal.ingredients.map((i: any) => `${i.amount} ${i.unit} ${i.name}`).join(', ')}\n`;
+      }
+    }
+  }
+
+  if (shoppingList && shoppingList.items.length > 0) {
+    const unchecked = shoppingList.items.filter((i: any) => !i.checked);
+    if (unchecked.length > 0) {
+      context += '\n\nSHOPPING LIST (items to buy):\n';
+      const byCategory: Record<string, any[]> = {};
+      for (const item of unchecked) {
+        const cat = item.category || 'Other';
+        if (!byCategory[cat]) byCategory[cat] = [];
+        byCategory[cat].push(item);
+      }
+      for (const [cat, items] of Object.entries(byCategory)) {
+        context += `\n${cat}:\n`;
+        for (const item of items) {
+          context += `  - ${item.amount} ${item.unit} ${item.ingredientName} (for: ${item.recipeNames.join(', ')})\n`;
+        }
+      }
+    }
+  }
+
+  return context;
+}
+
 // Get user display name
 function getUserName(ctx: Context): string {
   const user = ctx.from;
@@ -476,7 +554,8 @@ async function downloadFile(url: string): Promise<Buffer> {
 }
 
 /**
- * Start command
+ * Start command - Supports deep linking for auto-connection
+ * Deep link format: https://t.me/BotName?start=family_abc123
  */
 bot.command('start', async (ctx) => {
   const chatId = ctx.chat.id;
@@ -489,29 +568,78 @@ bot.command('start', async (ctx) => {
 
   const isGroup = isGroupChat(ctx);
 
+  // Check for deep link payload (family ID)
+  const messageText = ctx.message.text;
+  const payload = messageText.replace('/start', '').trim();
+
+  // If payload contains a family ID, auto-link
+  if (payload && payload.startsWith('family_')) {
+    try {
+      await firebaseService.linkTelegramChatToFamily(chatId, payload);
+      await ctx.reply(
+        `🎉 Success! You're connected to MealMind!\n\n` +
+        `✅ Chat linked to your family\n\n` +
+        `You can now:\n` +
+        `📅 View meal plans: /today, /week, /shopping\n` +
+        `📖 Manage recipes: /addrecipe, /myrecipes\n` +
+        `❓ Ask me questions about your meals!\n\n` +
+        `Try asking: "What's for dinner tonight?"`
+      );
+      return;
+    } catch (error) {
+      console.error('Error auto-linking chat:', error);
+      // Fall through to normal welcome message
+    }
+  }
+
+  // Handle demo mode
+  if (payload === 'demo') {
+    const demoFamilyId = 'demo-family';
+    try {
+      await firebaseService.linkTelegramChatToFamily(chatId, demoFamilyId);
+      await ctx.reply(
+        `🎯 Demo Mode Activated!\n\n` +
+        `You're now connected to a demo account with:\n` +
+        `✅ Pre-made meal plan for this week\n` +
+        `✅ Sample recipes and shopping list\n\n` +
+        `Try these:\n` +
+        `/today - See today's meals\n` +
+        `/week - View the full week\n` +
+        `/shopping - Check the shopping list\n\n` +
+        `Or just ask: "What should I buy for the pasta?"`
+      );
+      return;
+    } catch (error) {
+      console.error('Error linking to demo:', error);
+    }
+  }
+
+  // Normal welcome message (no deep link)
   if (isGroup) {
     await ctx.reply(
       'Welcome to MealMind! 👨‍👩‍👧‍👦\n\n' +
       'I help your group plan meals together!\n\n' +
-      'Commands:\n' +
-      '/recipe - Get a recipe suggestion\n' +
-      '/myrestrictions - Set YOUR dietary restrictions\n' +
-      '/allrestrictions - View everyone\'s restrictions\n' +
-      '/members - See who\'s in the meal planning group\n' +
-      '/clear - Clear conversation history\n' +
-      '/help - Show commands\n\n' +
-      'Everyone in the group can set their own dietary restrictions, and I\'ll make sure recipes work for everyone!'
+      '🔗 First, link this chat to your family:\n' +
+      '/setfamily [your-family-id]\n\n' +
+      'Then you can:\n' +
+      '📅 View meal plans: /today, /week, /shopping\n' +
+      '📖 Get recipes: /recipe, /addrecipe, /myrecipes\n' +
+      '🥗 Set restrictions: /myrestrictions, /allrestrictions\n' +
+      '❓ Ask me questions about your meal plan!\n\n' +
+      'Use /help to see all commands.'
     );
   } else {
     await ctx.reply(
       'Welcome to MealMind!\n\n' +
       'I help you plan meals and find recipes.\n\n' +
-      'Commands:\n' +
-      '/recipe - Get a recipe suggestion\n' +
-      '/restrictions - Set dietary restrictions\n' +
-      '/clear - Clear conversation history\n' +
-      '/help - Show commands\n\n' +
-      'Or just chat with me about what you want to eat!\n\n' +
+      '🔗 First, link this chat to your family:\n' +
+      '/setfamily [your-family-id]\n\n' +
+      'Then you can:\n' +
+      '📅 View meal plans: /today, /week, /shopping\n' +
+      '📖 Get recipes: /recipe, /addrecipe, /myrecipes\n' +
+      '🥗 Set restrictions: /restrictions\n' +
+      '❓ Ask me questions about your meal plan!\n\n' +
+      'Use /help to see all commands.\n\n' +
       'Tip: Add me to a family group chat to plan meals together!'
     );
   }
@@ -651,6 +779,11 @@ bot.command('help', async (ctx) => {
   if (isGroup) {
     await ctx.reply(
       'MealMind Commands (Group):\n\n' +
+      '📅 Meal Plans:\n' +
+      '/setfamily [familyId] - Link chat to your family\n' +
+      '/today - Show today\'s meals\n' +
+      '/week - Show this week\'s meal plan\n' +
+      '/shopping - Show shopping list\n\n' +
       '📖 Recipes:\n' +
       '/recipe - Get a recipe suggestion\n' +
       '/addrecipe - Add your own recipe (text, PDF, or photo)\n' +
@@ -664,11 +797,16 @@ bot.command('help', async (ctx) => {
       '/clear - Clear conversation history\n' +
       '/help - Show this message\n\n' +
       'Just type naturally to chat about meals!\n' +
-      'I\'ll suggest from your saved recipes first.'
+      'I can answer questions about your meal plan and ingredients.'
     );
   } else {
     await ctx.reply(
       'MealMind Commands:\n\n' +
+      '📅 Meal Plans:\n' +
+      '/setfamily [familyId] - Link chat to your family\n' +
+      '/today - Show today\'s meals\n' +
+      '/week - Show this week\'s meal plan\n' +
+      '/shopping - Show shopping list\n\n' +
       '📖 Recipes:\n' +
       '/recipe - Get a recipe suggestion\n' +
       '/addrecipe - Add your own recipe (text, PDF, or photo)\n' +
@@ -680,9 +818,181 @@ bot.command('help', async (ctx) => {
       '/clear - Clear conversation history\n' +
       '/help - Show this message\n\n' +
       'Just type naturally to chat about meals!\n' +
-      'I\'ll suggest from your saved recipes first.'
+      'I can answer questions about your meal plan and ingredients.'
     );
   }
+});
+
+/**
+ * Set family ID for this chat
+ */
+bot.command('setfamily', async (ctx) => {
+  const chatId = ctx.chat.id;
+  const args = ctx.message.text.replace('/setfamily', '').trim();
+
+  if (!args) {
+    const currentFamilyId = await firebaseService.getTelegramChatFamilyId(chatId);
+    if (currentFamilyId) {
+      await ctx.reply(
+        `Currently linked to family: ${currentFamilyId}\n\n` +
+        'To change, use: /setfamily [new-family-id]'
+      );
+    } else {
+      await ctx.reply(
+        'This chat is not linked to a family yet.\n\n' +
+        'To link, use: /setfamily [family-id]\n\n' +
+        'You can find your family ID in the MealMind web app settings.'
+      );
+    }
+    return;
+  }
+
+  try {
+    await firebaseService.linkTelegramChatToFamily(chatId, args);
+    await ctx.reply(`✅ Chat linked to family: ${args}\n\nYou can now access your meal plans and shopping lists!`);
+  } catch (error) {
+    console.error('Error linking chat to family:', error);
+    await ctx.reply('Failed to link chat to family. Please check the family ID and try again.');
+  }
+});
+
+/**
+ * Show today's meals
+ */
+bot.command('today', async (ctx) => {
+  const chatId = ctx.chat.id;
+
+  const mealPlan = await getCurrentWeekMealPlan(chatId);
+
+  if (!mealPlan) {
+    await ctx.reply(
+      '📅 No meal plan found for this week.\n\n' +
+      'Make sure you:\n' +
+      '1. Linked this chat to your family using /setfamily\n' +
+      '2. Created a meal plan on the MealMind web app'
+    );
+    return;
+  }
+
+  const today = new Date().toISOString().split('T')[0];
+  const todayPlan = mealPlan.days.find((day: any) => day.date === today);
+
+  if (!todayPlan || todayPlan.meals.length === 0) {
+    await ctx.reply('📅 No meals planned for today.');
+    return;
+  }
+
+  let message = `📅 *Today's Meals* (${todayPlan.dayName})\n\n`;
+
+  for (const meal of todayPlan.meals) {
+    const mealTypeEmoji = meal.mealType === 'breakfast' ? '🌅' : meal.mealType === 'lunch' ? '☀️' : '🌙';
+    message += `${mealTypeEmoji} *${meal.mealType.charAt(0).toUpperCase() + meal.mealType.slice(1)}*\n`;
+    message += `${meal.recipeName}\n`;
+
+    if (meal.recipeDescription) {
+      message += `_${meal.recipeDescription}_\n`;
+    }
+
+    if (meal.prepTime || meal.cookTime) {
+      const totalTime = (meal.prepTime || 0) + (meal.cookTime || 0);
+      message += `⏱ ${totalTime} min\n`;
+    }
+
+    message += '\n';
+  }
+
+  await ctx.reply(message, { parse_mode: 'Markdown' });
+});
+
+/**
+ * Show this week's meal plan
+ */
+bot.command('week', async (ctx) => {
+  const chatId = ctx.chat.id;
+
+  const mealPlan = await getCurrentWeekMealPlan(chatId);
+
+  if (!mealPlan) {
+    await ctx.reply(
+      '📅 No meal plan found for this week.\n\n' +
+      'Make sure you:\n' +
+      '1. Linked this chat to your family using /setfamily\n' +
+      '2. Created a meal plan on the MealMind web app'
+    );
+    return;
+  }
+
+  const today = new Date().toISOString().split('T')[0];
+  let message = `📅 *This Week's Meal Plan*\n`;
+  message += `Status: ${mealPlan.status}\n\n`;
+
+  for (const day of mealPlan.days) {
+    const isToday = day.date === today;
+    message += `*${day.dayName}*${isToday ? ' 👈 TODAY' : ''}\n`;
+
+    if (day.meals.length === 0) {
+      message += '  _No meals planned_\n';
+    } else {
+      for (const meal of day.meals) {
+        const emoji = meal.mealType === 'breakfast' ? '🌅' : meal.mealType === 'lunch' ? '☀️' : '🌙';
+        message += `  ${emoji} ${meal.recipeName}\n`;
+      }
+    }
+    message += '\n';
+  }
+
+  message += 'Use /today for today\'s details or ask me questions!';
+
+  await ctx.reply(message, { parse_mode: 'Markdown' });
+});
+
+/**
+ * Show shopping list
+ */
+bot.command('shopping', async (ctx) => {
+  const chatId = ctx.chat.id;
+
+  const shoppingList = await getCurrentWeekShoppingList(chatId);
+
+  if (!shoppingList) {
+    await ctx.reply(
+      '🛒 No shopping list found.\n\n' +
+      'Make sure you:\n' +
+      '1. Linked this chat to your family using /setfamily\n' +
+      '2. Created and approved a meal plan on the MealMind web app'
+    );
+    return;
+  }
+
+  const unchecked = shoppingList.items.filter((i: any) => !i.checked);
+
+  if (unchecked.length === 0) {
+    await ctx.reply('🛒 Shopping list is complete! All items checked off. ✅');
+    return;
+  }
+
+  let message = `🛒 *Shopping List*\n`;
+  message += `Week of ${new Date(shoppingList.weekStartDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}\n\n`;
+
+  // Group by category
+  const byCategory: Record<string, any[]> = {};
+  for (const item of unchecked) {
+    const cat = item.category || 'Other';
+    if (!byCategory[cat]) byCategory[cat] = [];
+    byCategory[cat].push(item);
+  }
+
+  for (const [category, items] of Object.entries(byCategory).sort()) {
+    message += `*${category}*\n`;
+    for (const item of items) {
+      message += `☐ ${item.amount} ${item.unit} ${item.ingredientName}\n`;
+    }
+    message += '\n';
+  }
+
+  message += `_${unchecked.length} items to buy_`;
+
+  await ctx.reply(message, { parse_mode: 'Markdown' });
 });
 
 /**
@@ -1314,6 +1624,11 @@ bot.on('text', async (ctx) => {
   await ctx.sendChatAction('typing');
 
   try {
+    // Load current week's meal plan and shopping list
+    const mealPlan = await getCurrentWeekMealPlan(chatId);
+    const shoppingList = await getCurrentWeekShoppingList(chatId);
+    const mealPlanContext = formatMealPlanContext(mealPlan, shoppingList);
+
     // Get combined restrictions for all members in this chat
     const combinedRestrictions = getCombinedRestrictions(session);
     const restrictionsText = combinedRestrictions.length > 0
@@ -1369,6 +1684,7 @@ bot.on('text', async (ctx) => {
       // No matching saved recipes, generate new one
       prompt = `You are MealMind, a helpful meal planning assistant on Telegram.${groupContext}
 ${restrictionsText}
+${mealPlanContext}
 
 ${historyText ? `Previous conversation:\n${historyText}\n\n` : ''}${isGroup ? `${userName}: ` : 'User: '}${userMessage}
 
@@ -1383,10 +1699,11 @@ Keep it concise but complete. Use emojis sparingly for visual appeal.`;
     } else {
       prompt = `You are MealMind, a friendly meal planning assistant on Telegram.${groupContext}
 ${restrictionsText}
+${mealPlanContext}
 
 ${historyText ? `Previous conversation:\n${historyText}\n\n` : ''}${isGroup ? `${userName}: ` : 'User: '}${userMessage}
 
-Respond helpfully and conversationally. If they seem to want food suggestions, offer to help with recipes.`;
+Respond helpfully and conversationally. Answer questions about the meal plan, shopping list, recipes, and ingredients. If they seem to want food suggestions, offer to help with recipes.`;
     }
 
     const result = await model.generateContent(prompt);
