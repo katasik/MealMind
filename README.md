@@ -1,8 +1,8 @@
-# MealMind - Stop Stressing About What's for Dinner
+# MealMind - Stop Stressing About What We Should Make for Dinner
 
 **Decision fatigue is over. Eat better, save money, and get your time back.**
 
-MealMind is an AI-powered meal planning assistant that helps families eliminate the daily "what's for dinner?" stress. Build your recipe library from trusted sources, let AI create personalized weekly plans, and get automatic shopping lists—all while respecting dietary restrictions.
+MealMind is an AI-powered meal planning assistant that helps families eliminate the daily "what should we make for dinner?" stress. Build your recipe library from trusted sources, let AI create personalized weekly plans, and get automatic shopping lists—all while respecting dietary restrictions.
 
 ## The Problem
 
@@ -21,7 +21,7 @@ Plan once, eat all week. MealMind provides:
 - **AI-generated weekly meal plans** using recipes you already trust and love
 - **Recipe library** - Import from URLs, PDFs, or upload entire recipe books
 - **Smart shopping lists** - Auto-generated with what you need, organized by category
-- **Calendar export** - Share with family so everyone knows what's for dinner
+- **Calendar export** - Share with family so everyone knows what we're making for dinner
 - **Telegram integration** - Shopping reminders and AI Q&A on the go
 - **Dietary safety** - Respects all allergies and restrictions automatically
 
@@ -50,7 +50,7 @@ Plan once, eat all week. MealMind provides:
 - Auto-clears when the week ends
 
 ### Telegram Bot
-- Ask "What's for dinner tonight?" while shopping
+- Ask "What should we make for dinner tonight?" while shopping
 - View your shopping list on mobile
 - Get AI-powered answers about ingredients and recipes
 - Add recipes to your library from Telegram
@@ -146,7 +146,7 @@ You should receive a response: `{"ok":true,"result":true,"description":"Webhook 
    - `/today` - See today's meal
    - `/week` - View full week plan
    - `/list` - Get shopping list
-   - Ask questions: "What's for dinner?" or "Do I need eggs?"
+   - Ask questions: "What should we make for dinner?" or "Do I need eggs?"
 
 **Note:** The bot requires an approved meal plan to function. Generate and approve a meal plan in the web app first.
 

@@ -22,7 +22,7 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
           <h1 className="text-5xl md:text-6xl font-bold text-[#1F2937] mb-6">
             Stop Stressing About
             <br />
-            <span className="text-[#0EA5E9]">What's for Dinner</span>
+            <span className="text-[#0EA5E9]">What We Should Make for Dinner</span>
           </h1>
           <p className="text-xl text-[#6B7280] max-w-2xl mx-auto mb-8">
             Decision fatigue is over. Eat better, save money, and get your time back with AI-powered meal planning.
@@ -139,7 +139,7 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
                 <h3 className="font-semibold text-[#1F2937]">Add to Calendar</h3>
               </div>
               <p className="text-sm text-[#6B7280] mb-3">
-                Export your meal plan to your calendar or share with family. Everyone knows what's for dinner.
+                Export your meal plan to your calendar or share with family. Everyone knows what we're making for dinner.
               </p>
               <ul className="text-xs text-[#6B7280] space-y-1">
                 <li className="flex items-start gap-2">

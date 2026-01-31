@@ -583,7 +583,7 @@ bot.command('start', async (ctx) => {
         `📅 View meal plans: /today, /week, /shopping\n` +
         `📖 Manage recipes: /addrecipe, /myrecipes\n` +
         `❓ Ask me questions about your meals!\n\n` +
-        `Try asking: "What's for dinner tonight?"`
+        `Try asking: "What should we make for dinner tonight?"`
       );
       return;
     } catch (error) {
