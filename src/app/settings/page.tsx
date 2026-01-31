@@ -243,8 +243,14 @@ export default function SettingsPage() {
             <h2 className="text-lg font-semibold text-[#1F2937]">Telegram Integration</h2>
           </div>
           <p className="text-[#6B7280] text-sm mb-4">
-            Connect your Telegram to access meal plans, shopping lists, and ask questions on the go.
+            Connect your Telegram to view meal plans, shopping lists, and ask questions on the go.
           </p>
+          <div className="bg-[#DBEAFE] border border-[#BFDBFE] rounded-md p-3 mb-4">
+            <p className="text-xs text-[#1E40AF]">
+              <strong>Note:</strong> Basic features available (view meal plans, shopping lists, ask questions).
+              For advanced features like recipe voting and PDF uploads, run the bot locally.
+            </p>
+          </div>
 
           <div className="space-y-3">
             {/* Deep Link Button */}

@@ -75,15 +75,22 @@ export async function POST(request: NextRequest) {
       // Try to get the first registered Telegram chat from Firebase
       // This is a simplified approach - in production, you'd want to associate
       // the web user with their Telegram chat ID
-      const telegramChats = await firebaseService.getAllTelegramChats();
-      if (telegramChats && telegramChats.length > 0) {
-        targetChatId = telegramChats[0].chatId;
+      try {
+        const telegramChats = await firebaseService.getAllTelegramChats();
+        if (telegramChats && telegramChats.length > 0) {
+          targetChatId = telegramChats[0].chatId;
+        }
+      } catch (error) {
+        console.error('Error fetching telegram chats:', error);
       }
     }
 
     if (!targetChatId) {
       return NextResponse.json(
-        { error: 'No Telegram chat found. Please start a conversation with the bot first.' },
+        {
+          error: 'No Telegram connection found. Please connect your Telegram account first by visiting Settings and clicking "Open Telegram & Connect".',
+          requiresSetup: true
+        },
         { status: 400 }
       );
     }

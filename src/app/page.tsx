@@ -362,6 +362,29 @@ export default function HomePage() {
     window.open(`/api/mealplans/export?mealPlanId=${mealPlan.id}`, '_blank');
   };
 
+  const openShoppingList = async () => {
+    if (!mealPlan) return;
+
+    // If shopping list is not in state, fetch it
+    if (!shoppingList) {
+      try {
+        const response = await fetch(`/api/shopping?mealPlanId=${mealPlan.id}`);
+        const data = await response.json();
+        if (data.shoppingList) {
+          setShoppingList(data.shoppingList);
+          setShowShoppingModal(true);
+        } else {
+          setToast({ message: 'Shopping list not found. Please try approving the plan again.', type: 'error' });
+        }
+      } catch (error) {
+        console.error('Error fetching shopping list:', error);
+        setToast({ message: 'Failed to load shopping list', type: 'error' });
+      }
+    } else {
+      setShowShoppingModal(true);
+    }
+  };
+
   const sendToTelegram = async () => {
     if (!shoppingList) return;
     setIsSendingTelegram(true);
@@ -375,11 +398,19 @@ export default function HomePage() {
       if (data.success) {
         setToast({ message: 'Shopping list sent to Telegram!', type: 'success' });
       } else {
-        setToast({ message: data.error || 'Failed to send to Telegram', type: 'error' });
+        // If it's a setup issue, provide more helpful guidance
+        if (data.requiresSetup) {
+          setToast({
+            message: 'Please connect Telegram first. Go to Settings → Telegram Integration to connect.',
+            type: 'error'
+          });
+        } else {
+          setToast({ message: data.error || 'Failed to send to Telegram', type: 'error' });
+        }
       }
     } catch (error) {
       console.error('Error sending to Telegram:', error);
-      setToast({ message: 'Failed to send to Telegram', type: 'error' });
+      setToast({ message: 'Failed to send to Telegram. Please try again.', type: 'error' });
     } finally {
       setIsSendingTelegram(false);
     }
@@ -574,7 +605,7 @@ export default function HomePage() {
           {mealPlan && (mealPlan.status === 'approved' || mealPlan.status === 'finalized') && (
             <>
               <button
-                onClick={() => setShowShoppingModal(true)}
+                onClick={openShoppingList}
                 className="flex items-center gap-2 px-3 py-1.5 text-sm bg-white text-[#1F2937] border border-[#E5E7EB] rounded-md hover:bg-[#F3F4F6] transition-colors"
               >
                 <ShoppingCart className="w-4 h-4" />

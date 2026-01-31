@@ -141,22 +141,60 @@ export async function POST(request: NextRequest) {
 
     // Handle commands
     if (text.startsWith('/')) {
-      const command = text.split(' ')[0].toLowerCase();
+      const commandParts = text.split(' ');
+      const command = commandParts[0].toLowerCase();
+      const payload = commandParts.slice(1).join(' ');
 
       switch (command) {
         case '/start':
-          await sendTelegramMessage(chatId,
-            "Hi! I'm MealMind, your meal planning assistant.\n\n" +
-            "You can ask me things like:\n" +
-            "- What should we make for dinner tonight?\n" +
-            "- What's on my shopping list?\n" +
-            "- What kind of chicken should I buy?\n" +
-            "- Show me today's meals\n\n" +
-            "Commands:\n" +
-            "/today - Show today's meals\n" +
-            "/week - Show this week's plan\n" +
-            "/list - Show shopping list"
-          );
+          // Handle deep link payload for auto-connection
+          if (payload && payload.startsWith('family_')) {
+            try {
+              await firebaseService.linkTelegramChatToFamily(chatId, payload);
+              await sendTelegramMessage(chatId,
+                "🎉 Success! You're connected to MealMind!\n\n" +
+                "✅ Chat linked to your family\n\n" +
+                "You can now:\n" +
+                "📅 View meal plans: /today, /week, /list\n" +
+                "❓ Ask me questions about your meals!\n\n" +
+                "Try asking: \"What should we make for dinner tonight?\""
+              );
+            } catch (error) {
+              console.error('Error auto-linking chat:', error);
+              await sendTelegramMessage(chatId, "Failed to connect to your family. Please try again or contact support.");
+            }
+          } else if (payload === 'demo') {
+            // Handle demo mode
+            try {
+              await firebaseService.linkTelegramChatToFamily(chatId, 'demo-family');
+              await sendTelegramMessage(chatId,
+                "🎯 Demo Mode Activated!\n\n" +
+                "You're now connected to a demo account.\n\n" +
+                "Try these:\n" +
+                "/today - See today's meals\n" +
+                "/week - View the full week\n" +
+                "/list - Check the shopping list\n\n" +
+                "Or just ask: \"What should I buy for dinner?\""
+              );
+            } catch (error) {
+              console.error('Error linking to demo:', error);
+              await sendTelegramMessage(chatId, "Failed to connect to demo. Please try again.");
+            }
+          } else {
+            // Normal start message
+            await sendTelegramMessage(chatId,
+              "Hi! I'm MealMind, your meal planning assistant.\n\n" +
+              "You can ask me things like:\n" +
+              "- What should we make for dinner tonight?\n" +
+              "- What's on my shopping list?\n" +
+              "- What kind of chicken should I buy?\n" +
+              "- Show me today's meals\n\n" +
+              "Commands:\n" +
+              "/today - Show today's meals\n" +
+              "/week - Show this week's plan\n" +
+              "/list - Show shopping list"
+            );
+          }
           break;
 
         case '/today':
