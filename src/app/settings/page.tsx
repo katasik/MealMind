@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { AlertTriangle, Heart, X, Plus, Loader2, Check, Clock, Globe } from 'lucide-react';
+import { AlertTriangle, Heart, X, Plus, Loader2, Check, Clock, Globe, MessageCircle, Copy, ExternalLink } from 'lucide-react';
 import Navigation from '@/components/Navigation';
 import type { DietaryRestriction, SupportedLanguage } from '@/types';
 
@@ -47,6 +47,7 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   // Dietary restrictions
   const [restrictions, setRestrictions] = useState<DietaryRestriction[]>([]);
@@ -62,6 +63,17 @@ export default function SettingsPage() {
   // Input states
   const [newFavorite, setNewFavorite] = useState('');
   const [newDisliked, setNewDisliked] = useState('');
+
+  // Telegram integration
+  const familyId = 'demo-family'; // In production, get from auth context
+  const botUsername = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || 'MealMindBot';
+  const telegramDeepLink = `https://t.me/${botUsername}?start=${familyId}`;
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   useEffect(() => {
     fetchSettings();
@@ -218,10 +230,58 @@ export default function SettingsPage() {
           </button>
         </div>
 
+        {/* Telegram Integration */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white border border-[#E5E7EB] rounded-lg p-5 mb-4"
+        >
+          <div className="flex items-center gap-2 mb-3">
+            <MessageCircle className="w-5 h-5 text-[#0EA5E9]" />
+            <h2 className="text-lg font-semibold text-[#1F2937]">Telegram Integration</h2>
+          </div>
+          <p className="text-[#6B7280] text-sm mb-4">
+            Connect your Telegram to access meal plans, shopping lists, and ask questions on the go.
+          </p>
+
+          <div className="space-y-3">
+            {/* Deep Link Button */}
+            <a
+              href={telegramDeepLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-[#0EA5E9] text-white rounded-md font-medium hover:bg-[#0284C7] transition-colors"
+            >
+              <ExternalLink className="w-4 h-4" />
+              Open Telegram & Connect
+            </a>
+
+            {/* Manual Command */}
+            <div className="pt-2 border-t border-[#E5E7EB]">
+              <p className="text-xs text-[#6B7280] mb-2">
+                Or manually connect by sending this command to @{botUsername}:
+              </p>
+              <div className="flex gap-2">
+                <code className="flex-1 px-3 py-2 bg-[#F3F4F6] text-[#1F2937] rounded-md text-sm font-mono">
+                  /setfamily {familyId}
+                </code>
+                <button
+                  onClick={() => copyToClipboard(`/setfamily ${familyId}`)}
+                  className="px-3 py-2 bg-[#F3F4F6] text-[#1F2937] rounded-md hover:bg-[#E5E7EB] transition-colors"
+                  title="Copy command"
+                >
+                  {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+          </div>
+        </motion.section>
+
         {/* Dietary Restrictions */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
           className="bg-white border border-[#E5E7EB] rounded-lg p-5 mb-4"
         >
           <div className="flex items-center gap-2 mb-3">
@@ -295,7 +355,7 @@ export default function SettingsPage() {
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
+          transition={{ delay: 0.2 }}
           className="bg-white border border-[#E5E7EB] rounded-lg p-5 mb-4"
         >
           <div className="flex items-center gap-2 mb-3">
@@ -330,7 +390,7 @@ export default function SettingsPage() {
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: 0.3 }}
           className="bg-white border border-[#E5E7EB] rounded-lg p-5 mb-4"
         >
           <div className="flex items-center gap-2 mb-3">
@@ -363,7 +423,7 @@ export default function SettingsPage() {
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.4 }}
           className="bg-white border border-[#E5E7EB] rounded-lg p-5 mb-4"
         >
           <div className="flex items-center gap-2 mb-3">
@@ -397,7 +457,7 @@ export default function SettingsPage() {
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
+          transition={{ delay: 0.5 }}
           className="bg-white border border-[#E5E7EB] rounded-lg p-5"
         >
           <h2 className="text-lg font-semibold text-[#1F2937] mb-4">Ingredient Preferences</h2>
