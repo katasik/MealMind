@@ -148,7 +148,7 @@ export async function POST(request: NextRequest) {
           await sendTelegramMessage(chatId,
             "Hi! I'm MealMind, your meal planning assistant.\n\n" +
             "You can ask me things like:\n" +
-            "- What's for dinner tonight?\n" +
+            "- What should we make for dinner tonight?\n" +
             "- What's on my shopping list?\n" +
             "- What kind of chicken should I buy?\n" +
             "- Show me today's meals\n\n" +

@@ -60,8 +60,8 @@ export async function POST(request: NextRequest) {
       ...(recipe.nutritionalInfo ? { nutritionalInfo: recipe.nutritionalInfo } : {})
     };
 
-    // Translate recipe if target language is not English
-    if (targetLanguage && targetLanguage !== 'en') {
+    // Translate recipe to target language
+    if (targetLanguage) {
       console.log(`[Recipe Save] Translating recipe to ${targetLanguage}`);
       try {
         recipeToSave = await geminiService.translateRecipe(recipeToSave, targetLanguage);

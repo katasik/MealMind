@@ -66,8 +66,10 @@ export default function SettingsPage() {
 
   // Telegram integration
   const familyId = 'demo-family'; // In production, get from auth context
-  const botUsername = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || 'MealMindBot';
-  const telegramDeepLink = `https://t.me/${botUsername}?start=${familyId}`;
+  // Use the bot username from env, fallback to the configured one
+  const botUsername = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || 'mealmind_helper_bot';
+  // For demo, use 'demo' payload; for real users, use 'family_' prefix
+  const telegramDeepLink = `https://t.me/${botUsername}?start=demo`;
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);

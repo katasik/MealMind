@@ -629,11 +629,6 @@ ${regenerateMeal ? 'Generate the single replacement meal now:' : `Generate the c
     recipe: Omit<Recipe, 'id' | 'createdAt'>,
     targetLanguage: SupportedLanguage
   ): Promise<Omit<Recipe, 'id' | 'createdAt'>> {
-    // Skip translation if target is English
-    if (targetLanguage === 'en') {
-      return recipe;
-    }
-
     const languageName = LANGUAGE_NAMES[targetLanguage];
 
     const prompt = `Translate this recipe to ${languageName}.
