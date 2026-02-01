@@ -68,8 +68,12 @@ export default function SettingsPage() {
   const familyId = 'demo-family'; // In production, get from auth context
   // Use the bot username from env, fallback to the configured one
   const botUsername = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || 'mealmind_helper_bot';
-  // Use tg:// protocol for better Safari/macOS compatibility
-  const telegramDeepLink = `tg://resolve?domain=${botUsername}&start=demo`;
+  const telegramWebLink = `https://t.me/${botUsername}?start=demo`;
+
+  const openTelegram = () => {
+    // Open in same window to avoid popup blockers and Safari issues
+    window.location.href = telegramWebLink;
+  };
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -248,15 +252,13 @@ export default function SettingsPage() {
 
           <div className="space-y-3">
             {/* Deep Link Button */}
-            <a
-              href={telegramDeepLink}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              onClick={openTelegram}
               className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-[#0EA5E9] text-white rounded-md font-medium hover:bg-[#0284C7] transition-colors"
             >
               <ExternalLink className="w-4 h-4" />
               Open Telegram & Connect
-            </a>
+            </button>
 
             {/* Manual Command */}
             <div className="pt-2 border-t border-[#E5E7EB]">
