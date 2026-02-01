@@ -68,8 +68,8 @@ export default function SettingsPage() {
   const familyId = 'demo-family'; // In production, get from auth context
   // Use the bot username from env, fallback to the configured one
   const botUsername = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || 'mealmind_helper_bot';
-  // For demo, use 'demo' payload; for real users, use 'family_' prefix
-  const telegramDeepLink = `https://t.me/${botUsername}?start=demo`;
+  // Use tg:// protocol for better Safari/macOS compatibility
+  const telegramDeepLink = `tg://resolve?domain=${botUsername}&start=demo`;
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -245,12 +245,6 @@ export default function SettingsPage() {
           <p className="text-[#6B7280] text-sm mb-4">
             Connect your Telegram to view meal plans, shopping lists, and ask questions on the go.
           </p>
-          <div className="bg-[#DBEAFE] border border-[#BFDBFE] rounded-md p-3 mb-4">
-            <p className="text-xs text-[#1E40AF]">
-              <strong>Note:</strong> Basic features available (view meal plans, shopping lists, ask questions).
-              For advanced features like recipe voting and PDF uploads, run the bot locally.
-            </p>
-          </div>
 
           <div className="space-y-3">
             {/* Deep Link Button */}
