@@ -18,22 +18,42 @@ interface TelegramUpdate {
   };
 }
 
+// Helper to calculate week start (Monday) for a given date
+function getWeekStartDate(date: Date): string {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  d.setDate(diff);
+  return d.toISOString().split('T')[0];
+}
+
 // Helper to get the current week's meal plan and shopping list
+// Also checks next week if current week has no meal plan (handles weekend edge case)
 async function getCurrentWeekContext(familyId: string) {
   const today = new Date();
-  const day = today.getDay();
-  const diff = today.getDate() - day + (day === 0 ? -6 : 1);
-  const monday = new Date(today.setDate(diff));
-  const weekStartDate = monday.toISOString().split('T')[0];
+  const weekStartDate = getWeekStartDate(today);
 
-  const mealPlan = await firebaseService.getMealPlan(familyId, weekStartDate);
+  // Try current week first
+  let mealPlan = await firebaseService.getMealPlan(familyId, weekStartDate);
+  let usedWeekStart = weekStartDate;
+
+  // If no meal plan for current week, try next week (handles Sunday/weekend planning)
+  if (!mealPlan) {
+    const nextWeek = new Date(today);
+    nextWeek.setDate(nextWeek.getDate() + 7);
+    const nextWeekStart = getWeekStartDate(nextWeek);
+    mealPlan = await firebaseService.getMealPlan(familyId, nextWeekStart);
+    if (mealPlan) {
+      usedWeekStart = nextWeekStart;
+    }
+  }
 
   let shoppingList = null;
   if (mealPlan) {
     shoppingList = await firebaseService.getMealPlanShoppingListByPlanId(mealPlan.id);
   }
 
-  return { mealPlan, shoppingList, weekStartDate };
+  return { mealPlan, shoppingList, weekStartDate: usedWeekStart };
 }
 
 // Helper to format today's meals
