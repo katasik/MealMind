@@ -722,21 +722,13 @@ class FirebaseService {
   }
 
   async getMealPlan(familyId: string, weekStartDate: string): Promise<MealPlan | null> {
-    // Return demo data for demo family
-    if (familyId === DEMO_FAMILY_ID) {
-      const demoMealPlan = generateDemoMealPlan();
-      if (demoMealPlan.weekStartDate === weekStartDate) {
-        return demoMealPlan;
-      }
-      return null;
-    }
-
     if (this.mockMode || !this.db) {
       return this.mockMealPlans.find(
         mp => mp.familyId === familyId && mp.weekStartDate === weekStartDate
       ) || null;
     }
 
+    // First check Firebase for real data (even for demo-family)
     const q = query(
       collection(this.db, 'mealPlans'),
       where('familyId', '==', familyId),
@@ -748,6 +740,15 @@ class FirebaseService {
     if (!querySnapshot.empty) {
       return querySnapshot.docs[0].data() as MealPlan;
     }
+
+    // Fall back to generated demo data only if no real data exists
+    if (familyId === DEMO_FAMILY_ID) {
+      const demoMealPlan = generateDemoMealPlan();
+      if (demoMealPlan.weekStartDate === weekStartDate) {
+        return demoMealPlan;
+      }
+    }
+
     return null;
   }
 
