@@ -1,0 +1,6 @@
+api/
+requirements.txt
+render.yaml
+*.py
+__pycache__/
+.pytest_cache/

@@ -1,15 +1,4 @@
 {
   "buildCommand": "next build",
-  "outputDirectory": ".next",
-  "functions": {
-    "api/**/*.py": {
-      "maxDuration": 60
-    }
-  },
-  "rewrites": [
-    {
-      "source": "/api/:path*",
-      "destination": "/api/:path*"
-    }
-  ]
+  "outputDirectory": ".next"
 }
