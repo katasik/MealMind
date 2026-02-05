@@ -11,13 +11,11 @@ services:
         value: 3.12.0
       - key: GOOGLE_API_KEY
         sync: false
+      - key: FIREBASE_SERVICE_ACCOUNT
+        sync: false
       - key: OPIK_API_KEY
         sync: false
       - key: OPIK_WORKSPACE
         sync: false
-      - key: FIREBASE_PROJECT_ID
-        sync: false
-      - key: FIREBASE_PRIVATE_KEY
-        sync: false
-      - key: FIREBASE_CLIENT_EMAIL
+      - key: TELEGRAM_BOT_TOKEN
         sync: false
