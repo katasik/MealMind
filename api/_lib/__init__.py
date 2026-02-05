@@ -1,0 +1,1 @@
+# MealMind API shared library
