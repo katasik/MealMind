@@ -1,0 +1,209 @@
+{
+  "dietary_compliance": [
+    {
+      "name": "Gluten-free pasta dish",
+      "recipe": {
+        "name": "Zucchini Noodles with Pesto",
+        "ingredients": [
+          {"name": "zucchini", "amount": 4, "unit": "medium"},
+          {"name": "basil pesto", "amount": 0.5, "unit": "cup"},
+          {"name": "cherry tomatoes", "amount": 1, "unit": "cup"},
+          {"name": "parmesan cheese", "amount": 0.25, "unit": "cup"}
+        ]
+      },
+      "restrictions": ["gluten-free"],
+      "expected": {
+        "passed": true,
+        "violations": []
+      }
+    },
+    {
+      "name": "Hidden gluten in soy sauce",
+      "recipe": {
+        "name": "Teriyaki Chicken",
+        "ingredients": [
+          {"name": "chicken breast", "amount": 2, "unit": "lbs"},
+          {"name": "soy sauce", "amount": 0.5, "unit": "cup"},
+          {"name": "brown sugar", "amount": 2, "unit": "tbsp"},
+          {"name": "garlic", "amount": 3, "unit": "cloves"}
+        ]
+      },
+      "restrictions": ["gluten-free"],
+      "expected": {
+        "passed": false,
+        "violationContains": "soy sauce"
+      }
+    },
+    {
+      "name": "Vegan meal check",
+      "recipe": {
+        "name": "Chickpea Curry",
+        "ingredients": [
+          {"name": "chickpeas", "amount": 2, "unit": "cans"},
+          {"name": "coconut milk", "amount": 1, "unit": "can"},
+          {"name": "curry powder", "amount": 2, "unit": "tbsp"},
+          {"name": "onion", "amount": 1, "unit": "large"}
+        ]
+      },
+      "restrictions": ["vegan"],
+      "expected": {
+        "passed": true,
+        "violations": []
+      }
+    },
+    {
+      "name": "Non-vegan with hidden dairy",
+      "recipe": {
+        "name": "Mashed Potatoes",
+        "ingredients": [
+          {"name": "potatoes", "amount": 3, "unit": "lbs"},
+          {"name": "butter", "amount": 4, "unit": "tbsp"},
+          {"name": "whole milk", "amount": 0.5, "unit": "cup"},
+          {"name": "salt", "amount": 1, "unit": "tsp"}
+        ]
+      },
+      "restrictions": ["vegan"],
+      "expected": {
+        "passed": false,
+        "violationContains": "butter"
+      }
+    },
+    {
+      "name": "Nut-free dessert",
+      "recipe": {
+        "name": "Chocolate Chip Cookies",
+        "ingredients": [
+          {"name": "flour", "amount": 2.25, "unit": "cups"},
+          {"name": "butter", "amount": 1, "unit": "cup"},
+          {"name": "chocolate chips", "amount": 2, "unit": "cups"},
+          {"name": "eggs", "amount": 2, "unit": "large"}
+        ]
+      },
+      "restrictions": ["nut-free"],
+      "expected": {
+        "passed": true,
+        "violations": []
+      }
+    },
+    {
+      "name": "Hidden peanut in pad thai",
+      "recipe": {
+        "name": "Pad Thai",
+        "ingredients": [
+          {"name": "rice noodles", "amount": 8, "unit": "oz"},
+          {"name": "peanut oil", "amount": 2, "unit": "tbsp"},
+          {"name": "crushed peanuts", "amount": 0.25, "unit": "cup"},
+          {"name": "bean sprouts", "amount": 1, "unit": "cup"}
+        ]
+      },
+      "restrictions": ["nut-free"],
+      "expected": {
+        "passed": false,
+        "violationContains": "peanut"
+      }
+    }
+  ],
+  "recipe_extraction": [
+    {
+      "name": "Basic recipe with clear structure",
+      "source": "Classic Banana Bread\n\nIngredients:\n- 3 ripe bananas\n- 1/3 cup melted butter\n- 3/4 cup sugar\n- 1 egg\n- 1 tsp vanilla\n- 1 tsp baking soda\n- 1.5 cups flour\n\nInstructions:\n1. Preheat oven to 350°F\n2. Mash bananas in a bowl\n3. Mix in melted butter\n4. Add sugar, egg, and vanilla\n5. Stir in baking soda and flour\n6. Pour into greased loaf pan\n7. Bake 60-65 minutes",
+      "sourceType": "text",
+      "expectedFields": {
+        "name": "Banana Bread",
+        "ingredientCount": 7,
+        "instructionCount": 7
+      }
+    },
+    {
+      "name": "Recipe with metric measurements",
+      "source": "Simple Tomato Soup\n\nIngredients:\n- 1kg tomatoes, chopped\n- 500ml vegetable stock\n- 2 cloves garlic\n- 1 tbsp olive oil\n- Salt and pepper to taste\n\nMethod:\n1. Heat oil in a large pot\n2. Sauté garlic for 1 minute\n3. Add tomatoes and cook for 10 minutes\n4. Add stock and simmer for 20 minutes\n5. Blend until smooth\n6. Season with salt and pepper",
+      "sourceType": "text",
+      "expectedFields": {
+        "name": "Tomato Soup",
+        "ingredientCount": 5,
+        "instructionCount": 6
+      }
+    }
+  ],
+  "meal_variety": [
+    {
+      "name": "Diverse weekly plan",
+      "mealPlan": {
+        "days": [
+          {"dayName": "Monday", "meals": [{"recipeName": "Oatmeal", "cuisine": "American"}, {"recipeName": "Caesar Salad", "cuisine": "American"}, {"recipeName": "Pad Thai", "cuisine": "Thai"}]},
+          {"dayName": "Tuesday", "meals": [{"recipeName": "Smoothie Bowl", "cuisine": "American"}, {"recipeName": "Tacos", "cuisine": "Mexican"}, {"recipeName": "Sushi", "cuisine": "Japanese"}]},
+          {"dayName": "Wednesday", "meals": [{"recipeName": "Pancakes", "cuisine": "American"}, {"recipeName": "Greek Salad", "cuisine": "Greek"}, {"recipeName": "Pasta Primavera", "cuisine": "Italian"}]}
+        ]
+      },
+      "expectedMinScore": 0.7
+    },
+    {
+      "name": "Repetitive plan",
+      "mealPlan": {
+        "days": [
+          {"dayName": "Monday", "meals": [{"recipeName": "Chicken Pasta", "cuisine": "Italian"}, {"recipeName": "Chicken Salad", "cuisine": "American"}, {"recipeName": "Chicken Stir Fry", "cuisine": "Asian"}]},
+          {"dayName": "Tuesday", "meals": [{"recipeName": "Chicken Sandwich", "cuisine": "American"}, {"recipeName": "Chicken Soup", "cuisine": "American"}, {"recipeName": "Chicken Tacos", "cuisine": "Mexican"}]},
+          {"dayName": "Wednesday", "meals": [{"recipeName": "Chicken Wrap", "cuisine": "American"}, {"recipeName": "Chicken Pasta", "cuisine": "Italian"}, {"recipeName": "Chicken Curry", "cuisine": "Indian"}]}
+        ]
+      },
+      "expectedMaxScore": 0.5
+    }
+  ],
+  "shopping_completeness": [
+    {
+      "name": "Complete shopping list",
+      "mealPlan": {
+        "days": [
+          {
+            "meals": [
+              {
+                "recipeName": "Scrambled Eggs",
+                "ingredients": [
+                  {"name": "eggs", "amount": 4, "unit": "large"},
+                  {"name": "butter", "amount": 1, "unit": "tbsp"},
+                  {"name": "salt", "amount": 0.25, "unit": "tsp"}
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "shoppingList": {
+        "items": [
+          {"name": "eggs", "amount": 4, "unit": "large"},
+          {"name": "butter", "amount": 1, "unit": "tbsp"},
+          {"name": "salt", "amount": 0.25, "unit": "tsp"}
+        ]
+      },
+      "expectedPassed": true
+    },
+    {
+      "name": "Missing ingredients",
+      "mealPlan": {
+        "days": [
+          {
+            "meals": [
+              {
+                "recipeName": "Pancakes",
+                "ingredients": [
+                  {"name": "flour", "amount": 2, "unit": "cups"},
+                  {"name": "milk", "amount": 1.5, "unit": "cups"},
+                  {"name": "eggs", "amount": 2, "unit": "large"},
+                  {"name": "butter", "amount": 2, "unit": "tbsp"}
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "shoppingList": {
+        "items": [
+          {"name": "flour", "amount": 2, "unit": "cups"},
+          {"name": "milk", "amount": 1.5, "unit": "cups"}
+        ]
+      },
+      "expectedPassed": false,
+      "expectedMissing": ["eggs", "butter"]
+    }
+  ]
+}

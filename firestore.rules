@@ -1,0 +1,162 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ============================================
+    // IMPORTANT: This ruleset is configured for a demo app without authentication.
+    // For a production app with real users, you should:
+    // 1. Implement Firebase Authentication
+    // 2. Uncomment the authentication-based rules below
+    // 3. Remove or restrict the demo-family allowances
+    // ============================================
+
+    // Helper function: Check if user is authenticated (for future use)
+    // function isAuthenticated() {
+    //   return request.auth != null;
+    // }
+
+    // Helper function: Check if user owns the family (for future use)
+    // function isFamilyMember(familyId) {
+    //   return isAuthenticated() &&
+    //          request.auth.uid in get(/databases/$(database)/documents/families/$(familyId)).data.memberUids;
+    // }
+
+    // Helper function: Validate family data structure
+    function isValidFamily() {
+      let data = request.resource.data;
+      return data.keys().hasAll(['name', 'createdAt', 'updatedAt']);
+    }
+
+    // Helper function: Validate recipe data structure
+    function isValidRecipe() {
+      let data = request.resource.data;
+      return data.keys().hasAll(['familyId', 'name', 'ingredients', 'instructions']) &&
+             data.ingredients is list &&
+             data.instructions is list &&
+             data.familyId is string;
+    }
+
+    // ============================================
+    // FAMILIES COLLECTION
+    // ============================================
+    match /families/{familyId} {
+      // DEMO MODE: Allow read/write for demo-family
+      // PRODUCTION: Replace with authentication checks
+      allow read, write: if familyId == 'demo-family';
+
+      // PRODUCTION VERSION (uncomment when auth is implemented):
+      // allow read: if isFamilyMember(familyId);
+      // allow create: if isAuthenticated() && isValidFamily();
+      // allow update: if isFamilyMember(familyId) && isValidFamily();
+      // allow delete: if isFamilyMember(familyId);
+
+      // Family members subcollection
+      match /members/{memberId} {
+        allow read, write: if familyId == 'demo-family';
+
+        // PRODUCTION VERSION:
+        // allow read: if isFamilyMember(familyId);
+        // allow write: if isFamilyMember(familyId);
+      }
+
+      // Family settings subcollection
+      match /settings/{document=**} {
+        allow read, write: if familyId == 'demo-family';
+
+        // PRODUCTION VERSION:
+        // allow read: if isFamilyMember(familyId);
+        // allow write: if isFamilyMember(familyId);
+      }
+    }
+
+    // ============================================
+    // RECIPES COLLECTION
+    // ============================================
+    match /recipes/{recipeId} {
+      // Allow read for demo family
+      allow read: if resource.data.familyId == 'demo-family';
+
+      // Allow create with valid data
+      allow create: if request.resource.data.familyId == 'demo-family' &&
+                       isValidRecipe();
+
+      // Allow update/delete for demo family recipes
+      allow update, delete: if resource.data.familyId == 'demo-family';
+
+      // PRODUCTION VERSION:
+      // allow read: if resource.data.familyId in getUserFamilyIds();
+      // allow create: if isAuthenticated() &&
+      //                  isValidRecipe() &&
+      //                  isFamilyMember(request.resource.data.familyId);
+      // allow update, delete: if isAuthenticated() &&
+      //                           isFamilyMember(resource.data.familyId);
+    }
+
+    // ============================================
+    // MEAL PLANS COLLECTION
+    // ============================================
+    match /mealPlans/{mealPlanId} {
+      // Allow read/write for demo family meal plans
+      allow read: if resource.data.familyId == 'demo-family';
+      allow create: if request.resource.data.familyId == 'demo-family';
+      allow update, delete: if resource.data.familyId == 'demo-family';
+
+      // PRODUCTION VERSION:
+      // allow read: if isFamilyMember(resource.data.familyId);
+      // allow create: if isAuthenticated() &&
+      //                  isFamilyMember(request.resource.data.familyId) &&
+      //                  request.resource.data.keys().hasAll(['familyId', 'weekStartDate', 'status', 'days']);
+      // allow update: if isFamilyMember(resource.data.familyId);
+      // allow delete: if isFamilyMember(resource.data.familyId);
+    }
+
+    // ============================================
+    // SHOPPING LISTS COLLECTION
+    // ============================================
+    match /shoppingLists/{listId} {
+      // Allow read/write for demo family shopping lists
+      allow read: if resource.data.familyId == 'demo-family';
+      allow create: if request.resource.data.familyId == 'demo-family';
+      allow update, delete: if resource.data.familyId == 'demo-family';
+
+      // PRODUCTION VERSION:
+      // allow read: if isFamilyMember(resource.data.familyId);
+      // allow create: if isAuthenticated() &&
+      //                  isFamilyMember(request.resource.data.familyId);
+      // allow update: if isFamilyMember(resource.data.familyId);
+      // allow delete: if isFamilyMember(resource.data.familyId);
+    }
+
+    // ============================================
+    // EVALUATION RESULTS COLLECTION
+    // ============================================
+    match /evaluationResults/{resultId} {
+      // Allow read for demo family
+      allow read: if resource.data.familyId == 'demo-family';
+
+      // Only server (via Admin SDK) can write evaluation results
+      allow write: if false;
+
+      // PRODUCTION VERSION:
+      // allow read: if isFamilyMember(resource.data.familyId);
+      // allow write: if false; // Only server can write
+    }
+
+    // ============================================
+    // TELEGRAM CHATS COLLECTION (if you add it)
+    // ============================================
+    match /telegramChats/{chatId} {
+      allow read: if resource.data.familyId == 'demo-family';
+      allow write: if request.resource.data.familyId == 'demo-family';
+
+      // PRODUCTION VERSION:
+      // allow read: if isFamilyMember(resource.data.familyId);
+      // allow write: if isFamilyMember(resource.data.familyId);
+    }
+
+    // Deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
