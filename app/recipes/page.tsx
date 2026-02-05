@@ -6,7 +6,7 @@ import RecipeCard from '@/components/RecipeCard';
 import RecipeModal from '@/components/RecipeModal';
 import AddRecipeModal from '@/components/AddRecipeModal';
 import { getFamilyRecipes, deleteRecipe, initializeDemoFamily } from '@/lib/firebase';
-import type { Recipe } from '@/lib/types';
+import type { Recipe, MealType } from '@/lib/types';
 
 export default function RecipesPage() {
   const [familyId, setFamilyId] = useState<string | null>(null);
@@ -15,7 +15,7 @@ export default function RecipesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [filterMealType, setFilterMealType] = useState<string>('all');
+  const [filterMealType, setFilterMealType] = useState<MealType | 'all'>('all');
 
   useEffect(() => {
     loadRecipes();
@@ -110,7 +110,7 @@ export default function RecipesPage() {
         {/* Meal type filter */}
         <select
           value={filterMealType}
-          onChange={(e) => setFilterMealType(e.target.value)}
+          onChange={(e) => setFilterMealType(e.target.value as MealType | 'all')}
           className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
         >
           <option value="all">All Meals</option>
