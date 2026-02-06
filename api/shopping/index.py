@@ -139,9 +139,11 @@ class handler(BaseHTTPRequestHandler):
         ) as op:
             try:
                 # Get meal plan
+                print(f"DEBUG: Looking for meal plan with ID: {meal_plan_id}")
                 meal_plan = get_meal_plan(meal_plan_id)
+                print(f"DEBUG: Meal plan result: {meal_plan is not None}")
                 if not meal_plan:
-                    raise ValueError("Meal plan not found")
+                    raise ValueError(f"Meal plan not found for ID: {meal_plan_id}")
 
                 family_id = meal_plan.get('familyId')
                 week_start = meal_plan.get('weekStartDate')
