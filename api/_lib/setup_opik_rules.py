@@ -110,14 +110,19 @@ CRITICAL: Base your evaluation ONLY on what is ACTUALLY present in the JSON abov
 Do NOT assume or guess about ingredients or recipes. Read the meal plan carefully.
 
 Analyze these dimensions (0.0 – 1.0):
-- protein_diversity:  Count ACTUAL distinct protein sources in the ingredients (3+ = 0.8+)
+- protein_diversity:  Count ONLY the distinct protein sources you ACTUALLY FIND in the ingredients list. \
+  Examples: chicken, beef, tofu, eggs, chickpeas. DO NOT count "absence of X" or "lack of Y" as proteins. \
+  Only count what is present. (3+ actual proteins = 0.8+)
 - cuisine_diversity:  Count ACTUAL cuisines listed in the recipes (3+ = 0.8+)
 - recipe_uniqueness:  Calculate ACTUAL fraction of unique recipe names (90%+ = 0.9+)
 - cooking_methods:    Infer from ACTUAL cooking instructions (4+ methods = 0.8+)
 
 Leftovers used at lunch are normal — do NOT penalize them.
 
-In your reasoning, CITE SPECIFIC EXAMPLES from the meal plan (recipe names, ingredients you found). \
+In your reasoning, CITE SPECIFIC EXAMPLES from the meal plan with counts: \
+"Found 3 distinct proteins: chicken (appears in 2 recipes), chickpeas (1 recipe), eggs (1 recipe)". \
+DO NOT include negatives like "no beef" in your protein count.
+
 Provide an overall variety score (0.0-1.0) where 0.7+ means good diversity.
 """
 

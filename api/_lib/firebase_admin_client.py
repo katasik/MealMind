@@ -19,6 +19,7 @@ def get_firestore():
 
     if not firebase_admin._apps:
         raw = os.environ.get('FIREBASE_SERVICE_ACCOUNT', '{}')
+        print(f"DEBUG get_firestore: FIREBASE_SERVICE_ACCOUNT exists: {bool(raw and raw != '{}')}")
         try:
             service_account = json.loads(raw)
         except json.JSONDecodeError as e:
@@ -27,13 +28,17 @@ def get_firestore():
                 f"Value starts with: {raw[:50]!r}..."
             ) from e
         if service_account:
+            project_id = service_account.get('project_id', 'UNKNOWN')
+            print(f"DEBUG get_firestore: Initializing Firebase for project: {project_id}")
             cred = credentials.Certificate(service_account)
             firebase_admin.initialize_app(cred)
         else:
+            print("DEBUG get_firestore: No service account found, using default initialization")
             # For local development without credentials
             firebase_admin.initialize_app()
 
     _db = firestore.client()
+    print("DEBUG get_firestore: Firestore client created successfully")
     return _db
 
 
@@ -104,10 +109,13 @@ def get_current_meal_plan(family_id: str, week_start: str) -> Optional[dict]:
 
 def save_meal_plan(family_id: str, week_start: str, meal_plan: dict, evaluation: dict, trace_id: str) -> str:
     """Save or update a meal plan."""
+    print(f"DEBUG save_meal_plan: Starting save for family {family_id}, week {week_start}")
     db = get_firestore()
+    print(f"DEBUG save_meal_plan: Got Firestore client")
 
     # Check if plan exists for this week
     existing = get_current_meal_plan(family_id, week_start)
+    print(f"DEBUG save_meal_plan: Existing plan found: {existing is not None}")
 
     data = {
         'familyId': family_id,
@@ -122,11 +130,13 @@ def save_meal_plan(family_id: str, week_start: str, meal_plan: dict, evaluation:
     if existing:
         doc_ref = db.collection('mealPlans').document(existing['id'])
         doc_ref.update(data)
+        print(f"DEBUG save_meal_plan: Updated existing plan {existing['id']}")
         return existing['id']
     else:
         data['createdAt'] = firestore.SERVER_TIMESTAMP
         doc_ref = db.collection('mealPlans').document()
         doc_ref.set(data)
+        print(f"DEBUG save_meal_plan: Created new plan {doc_ref.id}")
         return doc_ref.id
 
 

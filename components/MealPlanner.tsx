@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Calendar, Sparkles, Check, AlertCircle, Loader2, Trash2, Download, Info, X } from 'lucide-react';
 import MealCard from './MealCard';
 import MealDetailsModal from './MealDetailsModal';
@@ -11,10 +11,23 @@ import type { MealPlan, MealType, PlannedMeal, Recipe } from '@/lib/types';
 interface MealPlannerProps {
   initialMealPlan?: MealPlan | null;
   familyId: string;
+  onMealPlanChange?: (mealPlan: MealPlan | null) => void;
 }
 
-export default function MealPlanner({ initialMealPlan, familyId }: MealPlannerProps) {
-  const [mealPlan, setMealPlan] = useState<MealPlan | null>(initialMealPlan || null);
+export default function MealPlanner({ initialMealPlan, familyId, onMealPlanChange }: MealPlannerProps) {
+  const [mealPlan, setMealPlanState] = useState<MealPlan | null>(initialMealPlan || null);
+
+  // Use a ref to always have access to the latest callback without causing re-renders
+  const onMealPlanChangeRef = useRef(onMealPlanChange);
+  useEffect(() => {
+    onMealPlanChangeRef.current = onMealPlanChange;
+  }, [onMealPlanChange]);
+
+  // Stable wrapper that notifies parent component
+  const setMealPlan = useCallback((plan: MealPlan | null) => {
+    setMealPlanState(plan);
+    onMealPlanChangeRef.current?.(plan);
+  }, []);
   const [isGenerating, setIsGenerating] = useState(false);
   const [regeneratingMeal, setRegeneratingMeal] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);

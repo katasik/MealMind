@@ -85,7 +85,7 @@ export default function HomePage() {
           className={`lg:col-span-2 ${activeTab !== 'meals' ? 'hidden md:block' : ''}`}
         >
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <MealPlanner initialMealPlan={mealPlan} familyId={familyId} />
+            <MealPlanner initialMealPlan={mealPlan} familyId={familyId} onMealPlanChange={setMealPlan} />
           </div>
         </div>
 

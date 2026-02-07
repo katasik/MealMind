@@ -310,6 +310,12 @@ async def _tracked_generate_meal_plan(
         family_id, week_start, meal_plan, evaluation_scores, opik_trace_id
     )
 
+    # Add ID to meal_plan object so frontend can reference it
+    meal_plan['id'] = meal_plan_id
+    meal_plan['familyId'] = family_id
+    meal_plan['weekStartDate'] = week_start
+    meal_plan['status'] = 'draft'
+
     # Save evaluation result
     save_evaluation_result(
         trace_id=opik_trace_id,
