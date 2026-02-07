@@ -47,7 +47,7 @@ export default function ShoppingPage() {
             <h2 className="text-xl font-semibold text-gray-900 mb-2">No Meal Plan</h2>
             <p className="text-gray-500 max-w-md mx-auto">
               Generate a meal plan first to create a shopping list. Go to the{' '}
-              <a href="/" className="text-primary-600 hover:text-primary-700 font-medium">
+              <a href="/meal-plan" className="text-primary-600 hover:text-primary-700 font-medium">
                 Meal Plan
               </a>{' '}
               page to get started.

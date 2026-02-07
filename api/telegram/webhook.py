@@ -76,14 +76,13 @@ class handler(BaseHTTPRequestHandler):
             self.handle_list_command(chat_id)
         elif text.startswith('/meals'):
             self.handle_meals_command(chat_id)
+        elif text.startswith('/today'):
+            self.handle_today_command(chat_id)
         elif text.startswith('/help'):
             self.handle_help_command(chat_id)
         else:
-            # Echo or handle natural language
-            send_telegram_message(
-                chat_id,
-                "I didn't understand that command. Use /help to see available commands."
-            )
+            # AI-powered natural language chat
+            self.handle_ai_chat(chat_id, text)
 
     def handle_start_command(self, chat_id: int, text: str, chat_type: str):
         """Handle /start command - link chat to family."""
@@ -188,6 +187,168 @@ class handler(BaseHTTPRequestHandler):
 
         send_telegram_message(chat_id, '\n'.join(lines))
 
+    def handle_today_command(self, chat_id: int):
+        """Handle /today command - show today's meals only."""
+        chat_data = get_telegram_chat_by_id(chat_id)
+        if not chat_data:
+            send_telegram_message(
+                chat_id,
+                "❌ This chat is not linked. Use /start first."
+            )
+            return
+
+        family_id = chat_data.get('familyId')
+
+        from datetime import datetime, timedelta
+        today = datetime.now()
+        monday = today - timedelta(days=today.weekday())
+        week_start = monday.strftime('%Y-%m-%d')
+        today_str = today.strftime('%Y-%m-%d')
+
+        meal_plan = get_current_meal_plan(family_id, week_start)
+        if not meal_plan:
+            send_telegram_message(
+                chat_id,
+                "📭 No meal plan for this week. Generate one in the app!"
+            )
+            return
+
+        # Find today's meals
+        today_day = None
+        for day in meal_plan.get('days', []):
+            if day.get('date') == today_str:
+                today_day = day
+                break
+
+        if not today_day:
+            send_telegram_message(
+                chat_id,
+                f"📭 No meals planned for today ({today.strftime('%A')})."
+            )
+            return
+
+        lines = [f"🍽️ *Today's Meals — {today_day.get('dayName', today.strftime('%A'))}*\n"]
+        for meal in today_day.get('meals', []):
+            meal_type = meal.get('mealType', '')
+            recipe = meal.get('recipeName', 'Unknown')
+            emoji = {'breakfast': '🌅', 'lunch': '☀️', 'dinner': '🌙', 'snack': '🍎'}.get(meal_type, '🍽️')
+            desc = meal.get('recipeDescription', '')
+            time_total = (meal.get('prepTimeMinutes', 0) or 0) + (meal.get('cookTimeMinutes', 0) or 0)
+
+            lines.append(f"\n{emoji} *{meal_type.capitalize()}*")
+            lines.append(f"  {recipe}")
+            if desc:
+                lines.append(f"  _{desc[:80]}_")
+            if time_total > 0:
+                lines.append(f"  ⏱ {time_total} min")
+
+        send_telegram_message(chat_id, '\n'.join(lines))
+
+    def handle_ai_chat(self, chat_id: int, user_message: str):
+        """Handle natural language messages using Gemini AI."""
+        import asyncio
+
+        chat_data = get_telegram_chat_by_id(chat_id)
+        if not chat_data:
+            send_telegram_message(
+                chat_id,
+                "💬 I'd love to help! Please link this chat first with /start"
+            )
+            return
+
+        family_id = chat_data.get('familyId')
+
+        from datetime import datetime, timedelta
+        today = datetime.now()
+        monday = today - timedelta(days=today.weekday())
+        week_start = monday.strftime('%Y-%m-%d')
+        today_str = today.strftime('%Y-%m-%d')
+
+        meal_plan = get_current_meal_plan(family_id, week_start)
+        shopping_list = None
+
+        # Build context
+        today_meals_text = "No meals planned for today."
+        week_meals_text = "No meal plan for this week."
+        shopping_text = "No shopping list available."
+
+        if meal_plan:
+            # Today's meals
+            for day in meal_plan.get('days', []):
+                if day.get('date') == today_str:
+                    meals = []
+                    for m in day.get('meals', []):
+                        meal_info = f"{m.get('mealType', '')}: {m.get('recipeName', '')}"
+                        if m.get('ingredients'):
+                            ingredients = [i.get('name', '') for i in m['ingredients'][:10]]
+                            meal_info += f" (ingredients: {', '.join(ingredients)})"
+                        if m.get('instructions'):
+                            meal_info += f" | Instructions: {'; '.join(m['instructions'][:5])}"
+                        meals.append(meal_info)
+                    if meals:
+                        today_meals_text = "\n".join(meals)
+                    break
+
+            # Week summary
+            week_lines = []
+            for day in meal_plan.get('days', [])[:7]:
+                day_meals = [f"{m.get('mealType')}: {m.get('recipeName')}" for m in day.get('meals', [])]
+                week_lines.append(f"{day.get('dayName', 'Day')}: {', '.join(day_meals)}")
+            if week_lines:
+                week_meals_text = "\n".join(week_lines)
+
+            # Shopping list
+            shopping_data = get_shopping_list(meal_plan.get('id'))
+            if shopping_data:
+                items = [f"{i.get('name')} ({i.get('amount', '')} {i.get('unit', '')})" for i in shopping_data.get('items', [])[:20]]
+                if items:
+                    shopping_text = ", ".join(items)
+
+        prompt = f"""You are MealMind, a friendly and helpful meal planning assistant in a family Telegram group chat.
+
+TODAY'S DATE: {today.strftime('%A, %B %d')}
+
+TODAY'S MEALS:
+{today_meals_text}
+
+FULL WEEK PLAN:
+{week_meals_text}
+
+SHOPPING LIST:
+{shopping_text}
+
+Answer the user's question helpfully and concisely. You can help with:
+- What's for dinner/lunch/breakfast today or any day this week
+- Ingredient questions (what's needed, substitutions, quantities)
+- Recipe instructions or cooking tips for planned meals
+- Shopping list questions (what to buy, missing items)
+- General meal planning advice
+
+Keep responses SHORT and Telegram-friendly (under 200 words). Use emojis sparingly.
+If asked about a meal not in the plan, say so clearly.
+
+User's message: {user_message}"""
+
+        try:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            try:
+                from _lib.gemini_client import get_llm
+                llm = get_llm(temperature=0.7)
+                response = loop.run_until_complete(llm.ainvoke(prompt))
+                ai_response = response.content
+
+                # Send response (plain text to avoid Markdown parsing issues)
+                send_telegram_message(chat_id, ai_response, parse_mode=None)
+            finally:
+                loop.close()
+        except Exception as e:
+            print(f"[Telegram AI] Error: {e}")
+            send_telegram_message(
+                chat_id,
+                "Sorry, I couldn't process that right now. Try /help to see available commands."
+            )
+
     def handle_help_command(self, chat_id: int):
         """Handle /help command."""
         send_telegram_message(
@@ -195,13 +356,18 @@ class handler(BaseHTTPRequestHandler):
             "🤖 *MealMind Bot Help*\n\n"
             "*Commands:*\n"
             "/start - Link this chat to your account\n"
-            "/list - Get your shopping list\n"
+            "/today - See today's meals\n"
             "/meals - See this week's meals\n"
+            "/list - Get your shopping list\n"
             "/help - Show this help\n\n"
+            "*Or just ask me anything!*\n"
+            "\"What's for dinner?\"\n"
+            "\"What ingredients do I need for lunch?\"\n"
+            "\"How do I make today's breakfast?\"\n\n"
             "*Tips:*\n"
             "• Generate meal plans in the web app\n"
             "• Shopping lists are sent here automatically\n"
-            "• Check off items in the app as you shop"
+            "• Ask me about recipes, ingredients, or substitutions"
         )
 
     def handle_callback(self, callback_query: dict):

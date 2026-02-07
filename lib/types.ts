@@ -112,10 +112,14 @@ export interface UserPreferences {
 }
 
 // API Request/Response types
+export type RecipeMode = 'prioritize_saved' | 'new_only';
+
 export interface GenerateMealPlanRequest {
   familyId: string;
   days?: number;
   mealsPerDay?: MealType[];
+  startDate?: string;
+  recipeMode?: RecipeMode;
   previousFeedback?: Record<string, { value: number; reason: string | null }>;
 }
 

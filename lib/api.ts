@@ -8,6 +8,7 @@ import type {
   CreateShoppingListRequest,
   CreateShoppingListResponse,
   MealType,
+  RecipeMode,
   ShoppingList,
 } from './types';
 
@@ -53,9 +54,11 @@ export async function generateMealPlan(
   familyId: string,
   days: number = 7,
   mealsPerDay: MealType[] = ['breakfast', 'lunch', 'dinner'],
-  previousFeedback?: Record<string, { value: number; reason: string | null }>
+  previousFeedback?: Record<string, { value: number; reason: string | null }>,
+  startDate?: string,
+  recipeMode?: RecipeMode
 ): Promise<GenerateMealPlanResponse> {
-  const request: GenerateMealPlanRequest = { familyId, days, mealsPerDay, previousFeedback };
+  const request: GenerateMealPlanRequest = { familyId, days, mealsPerDay, previousFeedback, startDate, recipeMode };
   return fetchApi<GenerateMealPlanResponse>('/mealplans/generate', {
     method: 'POST',
     body: JSON.stringify(request),

@@ -21,6 +21,11 @@ except ImportError:
     httpx = None
     BeautifulSoup = None
 
+try:
+    import pdfplumber
+except ImportError:
+    pdfplumber = None
+
 
 RECIPE_PARSE_PROMPT = """Extract the recipe from this content into a structured format.
 
@@ -56,6 +61,33 @@ Return ONLY valid JSON:
 }}
 
 IMPORTANT: It is better to return null than to guess. Only include values that are explicitly in the source."""
+
+
+def extract_pdf_text(pdf_base64: str) -> str:
+    """Extract text from a base64-encoded PDF file."""
+    import base64
+    import io
+
+    if not pdfplumber:
+        raise ImportError("pdfplumber is not installed. Install it with: pip install pdfplumber")
+
+    # Remove data URL prefix if present (e.g., "data:application/pdf;base64,...")
+    if ',' in pdf_base64:
+        pdf_base64 = pdf_base64.split(',', 1)[1]
+
+    pdf_bytes = base64.b64decode(pdf_base64)
+    pdf_file = io.BytesIO(pdf_bytes)
+
+    text_parts = []
+    with pdfplumber.open(pdf_file) as pdf:
+        for i, page in enumerate(pdf.pages[:20]):  # Limit to 20 pages
+            page_text = page.extract_text()
+            if page_text:
+                text_parts.append(page_text)
+
+    full_text = '\n\n'.join(text_parts)
+    # Limit to 10000 chars for LLM context
+    return full_text[:10000]
 
 
 async def fetch_url_content(url: str) -> str:
@@ -155,8 +187,7 @@ class handler(BaseHTTPRequestHandler):
                     content = await fetch_url_content(source)
                     source_url = source
                 elif source_type == 'pdf':
-                    # PDF parsing would go here
-                    content = source  # For now, assume text content
+                    content = extract_pdf_text(source)
                     source_url = None
                 else:
                     content = source

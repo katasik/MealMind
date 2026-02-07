@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Calendar, Sparkles, Check, AlertCircle, Loader2, Trash2, Download, Info, X } from 'lucide-react';
+import { Calendar, Sparkles, Check, AlertCircle, Loader2, Trash2, Download, Info, X, BookOpen, Wand2 } from 'lucide-react';
 import MealCard from './MealCard';
 import MealDetailsModal from './MealDetailsModal';
-import { cn, formatDate } from '@/lib/utils';
+import { cn, formatDate, getWeekStartDate } from '@/lib/utils';
 import { generateMealPlan, regenerateMeal, deleteMealPlan, approveMealPlan, downloadICalendar, getOpikScores } from '@/lib/api';
-import type { MealPlan, MealType, PlannedMeal, Recipe } from '@/lib/types';
+import type { MealPlan, MealType, PlannedMeal, Recipe, RecipeMode } from '@/lib/types';
 
 interface MealPlannerProps {
   initialMealPlan?: MealPlan | null;
@@ -38,6 +38,16 @@ export default function MealPlanner({ initialMealPlan, familyId, onMealPlanChang
   const [numDays, setNumDays] = useState(7);
   const [selectedMeals, setSelectedMeals] = useState<MealType[]>(['breakfast', 'lunch', 'dinner']);
   const [showConfig, setShowConfig] = useState(false);
+  const [startDate, setStartDate] = useState(() => {
+    // Default to next Monday
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    const daysUntilMonday = dayOfWeek === 0 ? 1 : (8 - dayOfWeek);
+    const nextMonday = new Date(today);
+    nextMonday.setDate(today.getDate() + (dayOfWeek === 1 ? 0 : daysUntilMonday));
+    return nextMonday.toISOString().split('T')[0];
+  });
+  const [recipeMode, setRecipeMode] = useState<RecipeMode>('prioritize_saved');
 
   // Raw Opik scores (value + reason) fetched in the background.
   const [opikScores, setOpikScores] = useState<Record<string, { value: number; reason: string | null }> | null>(null);
@@ -95,7 +105,7 @@ export default function MealPlanner({ initialMealPlan, familyId, onMealPlanChang
     setOpikScores(null); // Clear old scores
 
     try {
-      const response = await generateMealPlan(familyId, numDays, selectedMeals, feedbackFromPrevious);
+      const response = await generateMealPlan(familyId, numDays, selectedMeals, feedbackFromPrevious, startDate, recipeMode);
       if (response.success && response.mealPlan) {
         setMealPlan(response.mealPlan);
       } else {
@@ -201,10 +211,10 @@ export default function MealPlanner({ initialMealPlan, familyId, onMealPlanChang
   if (!mealPlan && !isGenerating) {
     return (
       <div className="text-center py-12">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary-100 mb-4">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary-50 mb-4">
           <Calendar className="w-8 h-8 text-primary-600" />
         </div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">No Meal Plan Yet</h2>
+        <h2 className="text-xl font-semibold text-gray-900 mb-2 tracking-tight">No Meal Plan Yet</h2>
         <p className="text-gray-500 mb-6 max-w-md mx-auto">
           Generate a personalized weekly meal plan based on your family&apos;s preferences and
           dietary requirements.
@@ -213,67 +223,25 @@ export default function MealPlanner({ initialMealPlan, familyId, onMealPlanChang
         {!showConfig ? (
           <button
             onClick={() => setShowConfig(true)}
-            className="inline-flex items-center space-x-2 bg-primary-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-700 transition-colors"
+            className="inline-flex items-center space-x-2 bg-primary-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors shadow-sm"
           >
             <Sparkles className="w-5 h-5" />
             <span>Generate Meal Plan</span>
           </button>
         ) : (
-          <div className="max-w-md mx-auto bg-white rounded-lg border border-gray-200 p-6 space-y-6">
-            {/* Days selector */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Number of Days
-              </label>
-              <select
-                value={numDays}
-                onChange={(e) => setNumDays(Number(e.target.value))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-              >
-                {[3, 5, 7, 14].map(days => (
-                  <option key={days} value={days}>{days} days</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Meal type selector */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Meals to Include
-              </label>
-              <div className="space-y-2">
-                {(['breakfast', 'lunch', 'dinner'] as MealType[]).map(meal => (
-                  <label key={meal} className="flex items-center space-x-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={selectedMeals.includes(meal)}
-                      onChange={() => toggleMeal(meal)}
-                      className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
-                    />
-                    <span className="text-sm text-gray-700 capitalize">{meal}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* Action buttons */}
-            <div className="flex space-x-3">
-              <button
-                onClick={() => handleGenerate()}
-                disabled={selectedMeals.length === 0}
-                className="flex-1 inline-flex items-center justify-center space-x-2 bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Sparkles className="w-4 h-4" />
-                <span>Generate</span>
-              </button>
-              <button
-                onClick={() => setShowConfig(false)}
-                className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg font-medium transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
+          <GenerationConfigPanel
+            numDays={numDays}
+            setNumDays={setNumDays}
+            selectedMeals={selectedMeals}
+            toggleMeal={toggleMeal}
+            startDate={startDate}
+            setStartDate={setStartDate}
+            recipeMode={recipeMode}
+            setRecipeMode={setRecipeMode}
+            onGenerate={() => handleGenerate()}
+            onCancel={() => setShowConfig(false)}
+            disabled={selectedMeals.length === 0}
+          />
         )}
 
         {error && (
@@ -378,61 +346,19 @@ export default function MealPlanner({ initialMealPlan, familyId, onMealPlanChang
 
       {/* Configuration modal for regeneration */}
       {showConfig && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-6">
-          {/* Days selector */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Number of Days
-            </label>
-            <select
-              value={numDays}
-              onChange={(e) => setNumDays(Number(e.target.value))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-            >
-              {[3, 5, 7, 14].map(days => (
-                <option key={days} value={days}>{days} days</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Meal type selector */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Meals to Include
-            </label>
-            <div className="space-y-2">
-              {(['breakfast', 'lunch', 'dinner'] as MealType[]).map(meal => (
-                <label key={meal} className="flex items-center space-x-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={selectedMeals.includes(meal)}
-                    onChange={() => toggleMeal(meal)}
-                    className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
-                  />
-                  <span className="text-sm text-gray-700 capitalize">{meal}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* Action buttons */}
-          <div className="flex space-x-3">
-            <button
-              onClick={() => handleGenerate()}
-              disabled={selectedMeals.length === 0}
-              className="flex-1 inline-flex items-center justify-center space-x-2 bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Sparkles className="w-4 h-4" />
-              <span>Generate</span>
-            </button>
-            <button
-              onClick={() => setShowConfig(false)}
-              className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg font-medium transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
+        <GenerationConfigPanel
+          numDays={numDays}
+          setNumDays={setNumDays}
+          selectedMeals={selectedMeals}
+          toggleMeal={toggleMeal}
+          startDate={startDate}
+          setStartDate={setStartDate}
+          recipeMode={recipeMode}
+          setRecipeMode={setRecipeMode}
+          onGenerate={() => handleGenerate()}
+          onCancel={() => setShowConfig(false)}
+          disabled={selectedMeals.length === 0}
+        />
       )}
 
       {/* Day tabs */}
@@ -504,6 +430,147 @@ export default function MealPlanner({ initialMealPlan, familyId, onMealPlanChang
           onReplace={handleReplaceRecipe}
         />
       )}
+    </div>
+  );
+}
+
+/* ── Generation Config Panel ── */
+
+interface GenerationConfigPanelProps {
+  numDays: number;
+  setNumDays: (days: number) => void;
+  selectedMeals: MealType[];
+  toggleMeal: (meal: MealType) => void;
+  startDate: string;
+  setStartDate: (date: string) => void;
+  recipeMode: RecipeMode;
+  setRecipeMode: (mode: RecipeMode) => void;
+  onGenerate: () => void;
+  onCancel: () => void;
+  disabled: boolean;
+}
+
+function GenerationConfigPanel({
+  numDays, setNumDays, selectedMeals, toggleMeal,
+  startDate, setStartDate, recipeMode, setRecipeMode,
+  onGenerate, onCancel, disabled
+}: GenerationConfigPanelProps) {
+  const today = new Date().toISOString().split('T')[0];
+
+  return (
+    <div className="max-w-md mx-auto bg-white rounded-xl border border-gray-200 p-6 space-y-5 text-left">
+      {/* Start date */}
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-700">Start Date</label>
+        <input
+          type="date"
+          value={startDate}
+          min={today}
+          onChange={(e) => setStartDate(e.target.value)}
+          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
+        />
+      </div>
+
+      {/* Days selector */}
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-700">Number of Days</label>
+        <div className="grid grid-cols-4 gap-2">
+          {[3, 5, 7, 14].map(days => (
+            <button
+              key={days}
+              onClick={() => setNumDays(days)}
+              className={cn(
+                'py-2 rounded-lg text-sm font-medium transition-colors border',
+                numDays === days
+                  ? 'bg-primary-50 text-primary-700 border-primary-200'
+                  : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+              )}
+            >
+              {days} days
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Meal type selector */}
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-700">Meals to Include</label>
+        <div className="flex gap-2">
+          {(['breakfast', 'lunch', 'dinner'] as MealType[]).map(meal => (
+            <button
+              key={meal}
+              onClick={() => toggleMeal(meal)}
+              className={cn(
+                'flex-1 py-2 rounded-lg text-sm font-medium transition-colors border capitalize',
+                selectedMeals.includes(meal)
+                  ? 'bg-primary-50 text-primary-700 border-primary-200'
+                  : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+              )}
+            >
+              {meal}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Recipe mode */}
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-700">Recipe Source</label>
+        <div className="space-y-2">
+          <button
+            onClick={() => setRecipeMode('prioritize_saved')}
+            className={cn(
+              'w-full flex items-center gap-3 p-3 rounded-lg border text-left transition-colors',
+              recipeMode === 'prioritize_saved'
+                ? 'bg-primary-50 border-primary-200'
+                : 'bg-white border-gray-200 hover:bg-gray-50'
+            )}
+          >
+            <BookOpen className={cn('w-5 h-5 flex-shrink-0', recipeMode === 'prioritize_saved' ? 'text-primary-600' : 'text-gray-400')} />
+            <div>
+              <p className={cn('text-sm font-medium', recipeMode === 'prioritize_saved' ? 'text-primary-700' : 'text-gray-700')}>
+                Prioritize my saved recipes
+              </p>
+              <p className="text-xs text-gray-500">Use your recipe library first, fill gaps with new ideas</p>
+            </div>
+          </button>
+          <button
+            onClick={() => setRecipeMode('new_only')}
+            className={cn(
+              'w-full flex items-center gap-3 p-3 rounded-lg border text-left transition-colors',
+              recipeMode === 'new_only'
+                ? 'bg-primary-50 border-primary-200'
+                : 'bg-white border-gray-200 hover:bg-gray-50'
+            )}
+          >
+            <Wand2 className={cn('w-5 h-5 flex-shrink-0', recipeMode === 'new_only' ? 'text-primary-600' : 'text-gray-400')} />
+            <div>
+              <p className={cn('text-sm font-medium', recipeMode === 'new_only' ? 'text-primary-700' : 'text-gray-700')}>
+                Generate completely new recipes
+              </p>
+              <p className="text-xs text-gray-500">Fresh ideas only — no saved recipes used</p>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      {/* Action buttons */}
+      <div className="flex space-x-3 pt-1">
+        <button
+          onClick={onGenerate}
+          disabled={disabled}
+          className="flex-1 inline-flex items-center justify-center space-x-2 bg-primary-600 text-white px-4 py-2.5 rounded-lg font-semibold hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+        >
+          <Sparkles className="w-4 h-4" />
+          <span>Generate</span>
+        </button>
+        <button
+          onClick={onCancel}
+          className="px-4 py-2.5 text-gray-700 hover:bg-gray-100 rounded-lg font-medium transition-colors"
+        >
+          Cancel
+        </button>
+      </div>
     </div>
   );
 }

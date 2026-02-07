@@ -59,7 +59,7 @@ MEAL_PLAN_PROMPT = """You are a meal planning assistant creating a personalized 
 1. Create a {days}-day meal plan starting from {start_date}
 2. STRICTLY avoid any ingredients that violate dietary restrictions - this is critical for health/safety
 3. Double-check EVERY ingredient against the restrictions above before including it
-4. Prioritize saved recipes when they fit the requirements
+4. {recipe_instruction}
 5. Ensure variety - don't repeat the same meal within the week
 6. Balance cuisines - mix different cuisines throughout the week
 7. Balance nutrition across the day (protein, vegetables, carbs)
@@ -119,7 +119,8 @@ def get_week_start() -> str:
 
 @opik.track(name="generate_meal_plan", project_name="mealmind", flush=True)
 async def _tracked_generate_meal_plan(
-    family_id: str, days: int, meals_per_day: list, previous_feedback: dict = None
+    family_id: str, days: int, meals_per_day: list, previous_feedback: dict = None,
+    start_date: str = None, recipe_mode: str = 'prioritize_saved'
 ) -> dict:
     """Core meal plan generation with Opik tracing via @track decorator.
 
@@ -143,8 +144,10 @@ async def _tracked_generate_meal_plan(
     llm = get_llm(temperature=temperature)
     print(f"[DEBUG] Using temperature={temperature}")
 
-    # Format saved recipes for prompt
-    if saved_recipes:
+    # Format saved recipes for prompt based on recipe_mode
+    if recipe_mode == 'new_only':
+        recipes_text = "Generate ALL NEW and creative recipes. Do NOT use any saved recipes. Create original recipes that fit the requirements."
+    elif saved_recipes:
         recipes_text = "\n".join([
             f"- {r.get('name', 'Unknown')}: {r.get('description', '')[:100]} "
             f"[{', '.join(r.get('mealTypes', []))}]"
@@ -153,7 +156,8 @@ async def _tracked_generate_meal_plan(
     else:
         recipes_text = "No saved recipes yet - generate all new recipes."
 
-    week_start = get_week_start()
+    # Use provided start_date or fall back to current week
+    week_start = start_date if start_date else get_week_start()
 
     # Build detailed restriction descriptions
     restriction_details_text = "None - no dietary restrictions."
@@ -199,6 +203,12 @@ async def _tracked_generate_meal_plan(
     # Add timestamp to prevent caching
     timestamp = datetime.now().isoformat()
 
+    # Build recipe instruction based on mode
+    if recipe_mode == 'new_only':
+        recipe_instruction = "Generate COMPLETELY NEW and creative recipes. Do NOT use any of the saved recipes listed above. Create original recipes that fit the requirements."
+    else:
+        recipe_instruction = "You MUST use saved recipes wherever possible. Only generate new recipes when no saved recipe fits the meal slot."
+
     prompt = MEAL_PLAN_PROMPT.format(
         days=days,
         meals_per_day=", ".join(meals_per_day),
@@ -211,7 +221,8 @@ async def _tracked_generate_meal_plan(
         saved_recipes=recipes_text,
         start_date=week_start,
         restriction_details=restriction_details_text,
-        previous_feedback=feedback_section
+        previous_feedback=feedback_section,
+        recipe_instruction=recipe_instruction
     )
 
     # Append timestamp as a comment to break caching
@@ -357,13 +368,15 @@ class handler(BaseHTTPRequestHandler):
             days = body.get('days', 7)
             meals_per_day = body.get('mealsPerDay', ['breakfast', 'lunch', 'dinner'])
             previous_feedback = body.get('previousFeedback')
+            start_date = body.get('startDate')
+            recipe_mode = body.get('recipeMode', 'prioritize_saved')
 
             # Run async code
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
             try:
                 result = loop.run_until_complete(
-                    self.generate_meal_plan(family_id, days, meals_per_day, previous_feedback)
+                    self.generate_meal_plan(family_id, days, meals_per_day, previous_feedback, start_date, recipe_mode)
                 )
             finally:
                 # Clean shutdown of event loop
@@ -404,7 +417,7 @@ class handler(BaseHTTPRequestHandler):
         self.send_header('Access-Control-Allow-Headers', 'Content-Type')
         self.end_headers()
 
-    async def generate_meal_plan(self, family_id: str, days: int, meals_per_day: list, previous_feedback: dict = None) -> dict:
+    async def generate_meal_plan(self, family_id: str, days: int, meals_per_day: list, previous_feedback: dict = None, start_date: str = None, recipe_mode: str = 'prioritize_saved') -> dict:
         """Thin wrapper that calls the @opik.track-decorated function
         and transforms its output to the HTTP response format."""
 
@@ -421,6 +434,8 @@ class handler(BaseHTTPRequestHandler):
                 days=days,
                 meals_per_day=meals_per_day,
                 previous_feedback=previous_feedback,
+                start_date=start_date,
+                recipe_mode=recipe_mode,
             )
 
             opik_trace_id = result.get('opik_trace_id')
