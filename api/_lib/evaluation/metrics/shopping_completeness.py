@@ -216,9 +216,9 @@ async def evaluate_shopping_completeness(
         for meal in day.get('meals', []):
             recipe_name = meal.get('recipeName', 'Unknown')
             for ing in meal.get('ingredients', []):
-                amount = ing.get('amount', '')
-                unit = ing.get('unit', '')
-                name = ing.get('name', '')
+                amount = ing.get('amount') or ''
+                unit = ing.get('unit') or ''
+                name = ing.get('name') or ''
 
                 # Normalize unit for consistent display
                 unit_normalized = normalize_unit(unit) if unit else unit
@@ -236,10 +236,10 @@ async def evaluate_shopping_completeness(
     shopping_details: List[Dict] = []
 
     for item in shopping_list.get('items', []):
-        amount = item.get('amount', '')
-        unit = item.get('unit', '')
-        name = item.get('name', '')
-        category = item.get('category', '')
+        amount = item.get('amount') or ''
+        unit = item.get('unit') or ''
+        name = item.get('name') or ''
+        category = item.get('category') or ''
         shopping_items.append(f"{amount} {unit} {name} [{category}]".strip())
         shopping_details.append({
             'name': name,
@@ -363,8 +363,8 @@ def aggregate_ingredients(meal_plan: Dict[str, Any]) -> List[Dict[str, Any]]:
             for ing in meal.get('ingredients', []):
                 original_name = ing.get('name', '')
                 name_normalized = normalize_ingredient_name(original_name)
-                amount = ing.get('amount', 0)
-                original_unit = ing.get('unit', '')
+                amount = ing.get('amount') or 0
+                original_unit = ing.get('unit') or ''
                 unit_normalized = normalize_unit(original_unit)
                 category = ing.get('category', '')
 
