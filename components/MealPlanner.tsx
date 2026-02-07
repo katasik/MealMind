@@ -11,10 +11,17 @@ import type { MealPlan, MealType, PlannedMeal, Recipe } from '@/lib/types';
 interface MealPlannerProps {
   initialMealPlan?: MealPlan | null;
   familyId: string;
+  onMealPlanChange?: (mealPlan: MealPlan | null) => void;
 }
 
-export default function MealPlanner({ initialMealPlan, familyId }: MealPlannerProps) {
-  const [mealPlan, setMealPlan] = useState<MealPlan | null>(initialMealPlan || null);
+export default function MealPlanner({ initialMealPlan, familyId, onMealPlanChange }: MealPlannerProps) {
+  const [mealPlan, setMealPlanState] = useState<MealPlan | null>(initialMealPlan || null);
+
+  // Wrapper to also notify parent component
+  const setMealPlan = (plan: MealPlan | null) => {
+    setMealPlanState(plan);
+    onMealPlanChange?.(plan);
+  };
   const [isGenerating, setIsGenerating] = useState(false);
   const [regeneratingMeal, setRegeneratingMeal] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
