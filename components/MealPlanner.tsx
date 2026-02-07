@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Calendar, Sparkles, Check, AlertCircle, Loader2, Trash2, Download, Info, X } from 'lucide-react';
 import MealCard from './MealCard';
 import MealDetailsModal from './MealDetailsModal';
@@ -17,11 +17,17 @@ interface MealPlannerProps {
 export default function MealPlanner({ initialMealPlan, familyId, onMealPlanChange }: MealPlannerProps) {
   const [mealPlan, setMealPlanState] = useState<MealPlan | null>(initialMealPlan || null);
 
-  // Wrapper to also notify parent component
-  const setMealPlan = (plan: MealPlan | null) => {
+  // Use a ref to always have access to the latest callback without causing re-renders
+  const onMealPlanChangeRef = useRef(onMealPlanChange);
+  useEffect(() => {
+    onMealPlanChangeRef.current = onMealPlanChange;
+  }, [onMealPlanChange]);
+
+  // Stable wrapper that notifies parent component
+  const setMealPlan = useCallback((plan: MealPlan | null) => {
     setMealPlanState(plan);
-    onMealPlanChange?.(plan);
-  };
+    onMealPlanChangeRef.current?.(plan);
+  }, []);
   const [isGenerating, setIsGenerating] = useState(false);
   const [regeneratingMeal, setRegeneratingMeal] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
