@@ -32,35 +32,42 @@ RECIPE_PARSE_PROMPT = """Extract the recipe from this content into a structured 
 SOURCE CONTENT:
 {content}
 
-CRITICAL: Extract ONLY information that is explicitly stated in the source.
-- Do NOT make up, infer, or hallucinate any data
-- If a field is NOT explicitly stated in the source, use null for that field
-- For ingredients: only include unit if explicitly specified (e.g., "3 bananas" has no unit, so unit should be null)
+EXTRACTION RULES:
+- Extract all information from the source content
+- For ingredients: ALWAYS include the amount and unit when mentioned. Examples:
+  - "2 cups flour" -> {{"name": "flour", "amount": 2, "unit": "cup", "category": "pantry"}}
+  - "3 eggs" -> {{"name": "eggs", "amount": 3, "unit": "piece", "category": "dairy"}}
+  - "salt to taste" -> {{"name": "salt", "amount": 1, "unit": "to taste", "category": "spices"}}
+  - "a pinch of pepper" -> {{"name": "pepper", "amount": 1, "unit": "pinch", "category": "spices"}}
 - For times: extract if mentioned ANYWHERE in the source (including within instructions like "cook for 20 minutes")
-- For servings: only include if explicitly stated
+- For tags: generate relevant tags based on the recipe (e.g., "quick", "healthy", "comfort food", "one-pot", "high-protein")
+- For mealTypes: infer from the recipe what meals it fits (e.g., "breakfast", "lunch", "dinner", "snack", "dessert")
+- For cuisine: infer if not explicitly stated (e.g., pasta dishes are "Italian", stir-fry is "Asian")
+- For difficulty: infer based on steps and technique complexity
 - The source may be in any language - extract times/amounts regardless of language
 
 Return ONLY valid JSON:
 {{
     "name": "Recipe Name",
-    "description": "Brief description from the source, or null if not provided",
+    "description": "Brief description of the recipe",
     "ingredients": [
-        {{"name": "ingredient name", "amount": 1, "unit": "cup (or null if not specified)", "category": "produce|dairy|meat|pantry|spices|frozen|other (or null if unclear)"}}
+        {{"name": "flour", "amount": 2, "unit": "cup", "category": "pantry"}},
+        {{"name": "eggs", "amount": 3, "unit": "piece", "category": "dairy"}}
     ],
     "instructions": [
-        "Step 1: Exact instruction from source",
-        "Step 2: Next step from source"
+        "Step 1: Do this",
+        "Step 2: Then do this"
     ],
-    "prepTimeMinutes": null,
-    "cookTimeMinutes": null,
-    "servings": null,
-    "cuisine": null,
-    "difficulty": "easy|medium|hard (or null if not stated)",
-    "tags": [],
-    "mealTypes": []
+    "prepTimeMinutes": 15,
+    "cookTimeMinutes": 30,
+    "servings": 4,
+    "cuisine": "Italian",
+    "difficulty": "easy",
+    "tags": ["quick", "weeknight", "family-friendly"],
+    "mealTypes": ["dinner"]
 }}
 
-IMPORTANT: It is better to return null than to guess. Only include values that are explicitly in the source."""
+IMPORTANT: Every ingredient MUST have a name and amount. Use your best judgement for unit and category."""
 
 
 def extract_pdf_text(pdf_base64: str) -> str:
