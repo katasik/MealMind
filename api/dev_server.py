@@ -22,6 +22,12 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 app = Flask(__name__)
 CORS(app)
 
+
+@app.route('/', methods=['GET', 'HEAD'])
+def health():
+    return jsonify({'status': 'ok'}), 200
+
+
 # Import handlers
 from recipes.parse import handler as ParseHandler
 from recipes.index import handler as RecipesHandler
