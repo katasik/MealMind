@@ -46,7 +46,7 @@ MEAL_PLAN_PROMPT = """You are a meal planning assistant creating a personalized 
 - Favorite ingredients (try to include): {favorites}
 - Disliked ingredients (NEVER include): {dislikes}
 - Cuisine preferences: {cuisines}
-- Cooking time preference: {cooking_time}
+- COOKING TIME LIMIT: {cooking_time} (total prep + cook time per recipe MUST NOT exceed this)
 - Language for recipe names/instructions: {language}
 
 ## AVAILABLE SAVED RECIPES (prioritize these when they fit)
@@ -60,11 +60,12 @@ MEAL_PLAN_PROMPT = """You are a meal planning assistant creating a personalized 
 2. STRICTLY avoid any ingredients that violate dietary restrictions - this is critical for health/safety
 3. Double-check EVERY ingredient against the restrictions above before including it
 4. {recipe_instruction}
-5. Ensure variety - don't repeat the same meal within the week
-6. Balance cuisines - mix different cuisines throughout the week
-7. Balance nutrition across the day (protein, vegetables, carbs)
-8. For breakfast, prefer quicker meals (<30 min total time)
-9. Generate detailed new recipes when saved recipes don't fit
+5. COOKING TIME IS STRICT: prepTimeMinutes + cookTimeMinutes MUST stay within the cooking time limit above. If the limit is "30 min", no recipe should exceed 30 minutes total. If "any", there is no limit.
+6. For breakfast, ALWAYS keep total time under 30 minutes regardless of the cooking time preference
+7. Ensure variety - don't repeat the same meal within the week
+8. Balance cuisines - mix different cuisines throughout the week
+9. Balance nutrition across the day (protein, vegetables, carbs)
+10. Generate detailed new recipes when saved recipes don't fit
 
 ## OUTPUT FORMAT
 Return ONLY valid JSON (no markdown, no explanation):

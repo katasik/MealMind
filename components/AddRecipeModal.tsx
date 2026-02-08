@@ -261,7 +261,12 @@ export default function AddRecipeModal({ familyId, onClose, onSuccess }: AddReci
                   </p>
                   {evaluation.hallucinationsDetected && (
                     <p className="text-sm mt-0.5">
-                      Warning: Some extracted data may not be accurate
+                      Some details may have been filled in automatically — please review before saving
+                    </p>
+                  )}
+                  {!evaluation.passed && !evaluation.hallucinationsDetected && (
+                    <p className="text-sm mt-0.5">
+                      The recipe was added but some fields may be incomplete — feel free to edit it
                     </p>
                   )}
                 </div>
