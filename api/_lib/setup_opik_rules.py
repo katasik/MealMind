@@ -88,7 +88,11 @@ Go through every recipe and every ingredient. Flag an ingredient ONLY if it \
 genuinely violates a listed restriction. Common mistakes to avoid:
 - Eggs are NOT dairy.  They are safe for dairy-free diets.
 - Eggs ARE safe for diabetic-friendly diets (high protein, low carb).
-- Coconut milk, oat milk, soy milk are NOT dairy.
+- ANY plant-based milk is NOT dairy. This includes: almond milk, coconut milk, \
+oat milk, soy milk, rice milk, cashew milk, hemp milk — with ANY modifier \
+(unsweetened, full-fat, light, vanilla, etc.). These are ALL dairy-free.
+- Coconut cream and coconut yogurt are NOT dairy.
+- Plant-based butters (peanut butter, almond butter, coconut butter) are NOT dairy.
 - Olive oil and coconut oil are fine for diabetic-friendly diets.
 - "Diabetic-friendly" only restricts added sugar and refined carbs; whole foods are fine.
 - Hidden allergens to watch: worcestershire sauce (fish), regular soy sauce (gluten).

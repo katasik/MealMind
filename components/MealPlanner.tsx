@@ -285,7 +285,7 @@ export default function MealPlanner({ initialMealPlan, familyId, onMealPlanChang
         {!showConfig ? (
           <button
             onClick={() => setShowConfig(true)}
-            className="inline-flex items-center space-x-2 bg-primary-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors shadow-sm"
+            className="inline-flex items-center space-x-2 bg-gray-900 text-white px-6 py-3 rounded-xl font-semibold hover:bg-gray-800 transition-colors shadow-sm"
           >
             <Sparkles className="w-5 h-5" />
             <span>Generate Meal Plan</span>
@@ -347,22 +347,22 @@ export default function MealPlanner({ initialMealPlan, familyId, onMealPlanChang
           )}
         </div>
 
-        <div className="flex items-center space-x-3 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
           {mealPlan.opikTraceId && (
             <button
               onClick={() => setShowScorePanel(true)}
               disabled={!scoresReady}
               className={cn(
-                'inline-flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors',
+                'inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-colors',
                 scoresReady
-                  ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'
-                  : 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                  ? 'bg-violet-50 text-violet-700 hover:bg-violet-100'
+                  : 'bg-gray-50 text-gray-400 cursor-not-allowed'
               )}
             >
               {scoresReady ? (
                 <>
                   <Info className="w-4 h-4" />
-                  <span>Quality Score</span>
+                  <span>Quality</span>
                 </>
               ) : (
                 <>
@@ -375,7 +375,7 @@ export default function MealPlanner({ initialMealPlan, familyId, onMealPlanChang
           {onOpenShoppingList && (
             <button
               onClick={onOpenShoppingList}
-              className="inline-flex items-center space-x-2 bg-primary-100 text-primary-700 px-4 py-2 rounded-lg font-medium hover:bg-primary-200 transition-colors"
+              className="inline-flex items-center gap-1.5 bg-gray-900 text-white px-3.5 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
               title="Shopping List"
             >
               <ShoppingCart className="w-4 h-4" />
@@ -384,7 +384,7 @@ export default function MealPlanner({ initialMealPlan, familyId, onMealPlanChang
           )}
           <button
             onClick={handleExportCalendar}
-            className="inline-flex items-center space-x-2 bg-green-100 text-green-700 px-4 py-2 rounded-lg font-medium hover:bg-green-200 transition-colors"
+            className="inline-flex items-center gap-1.5 bg-gray-100 text-gray-700 px-3.5 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
             title="Export to calendar"
           >
             <Download className="w-4 h-4" />
@@ -392,11 +392,10 @@ export default function MealPlanner({ initialMealPlan, familyId, onMealPlanChang
           </button>
           <button
             onClick={handleRemovePlan}
-            className="inline-flex items-center space-x-2 bg-red-100 text-red-700 px-4 py-2 rounded-lg font-medium hover:bg-red-200 transition-colors"
+            className="inline-flex items-center gap-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 px-2.5 py-2 rounded-lg text-sm font-medium transition-colors"
             title="Remove meal plan"
           >
             <Trash2 className="w-4 h-4" />
-            <span className="hidden sm:inline">Remove</span>
           </button>
         </div>
       </div>
@@ -447,7 +446,7 @@ export default function MealPlanner({ initialMealPlan, familyId, onMealPlanChang
             className={cn(
               'flex-shrink-0 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
               selectedDay === index
-                ? 'bg-primary-600 text-white'
+                ? 'bg-gray-900 text-white'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             )}
           >
@@ -636,7 +635,7 @@ function GenerationConfigPanel({
         <button
           onClick={onGenerate}
           disabled={disabled}
-          className="flex-1 inline-flex items-center justify-center space-x-2 bg-primary-600 text-white px-4 py-2.5 rounded-lg font-semibold hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+          className="flex-1 inline-flex items-center justify-center space-x-2 bg-gray-900 text-white px-4 py-2.5 rounded-lg font-semibold hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
         >
           <Sparkles className="w-4 h-4" />
           <span>Generate</span>
