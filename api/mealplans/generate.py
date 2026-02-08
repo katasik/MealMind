@@ -149,11 +149,24 @@ async def _tracked_generate_meal_plan(
     if recipe_mode == 'new_only':
         recipes_text = "Generate ALL NEW and creative recipes. Do NOT use any saved recipes. Create original recipes that fit the requirements."
     elif saved_recipes:
-        recipes_text = "\n".join([
-            f"- {r.get('name', 'Unknown')}: {r.get('description', '')[:100]} "
-            f"[{', '.join(r.get('mealTypes', []))}]"
-            for r in saved_recipes[:15]
-        ])
+        # Pass full recipe data so LLM can include them exactly as-is
+        recipe_entries = []
+        for r in saved_recipes[:10]:
+            ingredients_str = ", ".join([
+                f"{i.get('amount', '?')} {i.get('unit', '')} {i.get('name', '')}".strip()
+                for i in r.get('ingredients', [])
+            ])
+            instructions_str = " | ".join(r.get('instructions', []))
+            entry = (
+                f"RECIPE: {r.get('name', 'Unknown')}\n"
+                f"  Meal types: {', '.join(r.get('mealTypes', []))}\n"
+                f"  Cuisine: {r.get('cuisine', 'Any')}\n"
+                f"  Prep: {r.get('prepTimeMinutes', '?')} min | Cook: {r.get('cookTimeMinutes', '?')} min | Servings: {r.get('servings', 4)}\n"
+                f"  Ingredients: {ingredients_str}\n"
+                f"  Instructions: {instructions_str}"
+            )
+            recipe_entries.append(entry)
+        recipes_text = "\n\n".join(recipe_entries)
     else:
         recipes_text = "No saved recipes yet - generate all new recipes."
 
@@ -208,7 +221,7 @@ async def _tracked_generate_meal_plan(
     if recipe_mode == 'new_only':
         recipe_instruction = "Generate COMPLETELY NEW and creative recipes. Do NOT use any of the saved recipes listed above. Create original recipes that fit the requirements."
     else:
-        recipe_instruction = "You MUST use saved recipes wherever possible. Only generate new recipes when no saved recipe fits the meal slot."
+        recipe_instruction = "You MUST use saved recipes wherever possible. When using a saved recipe, copy its ingredients and instructions EXACTLY as provided above. The ONLY change you may make is substituting an ingredient that violates a dietary restriction — replace it with a safe alternative and note the substitution. Do NOT rewrite, rephrase, or regenerate saved recipes. Only generate new recipes when no saved recipe fits the meal slot."
 
     prompt = MEAL_PLAN_PROMPT.format(
         days=days,
@@ -263,6 +276,39 @@ async def _tracked_generate_meal_plan(
 
     if meal_plan is None:
         raise ValueError(f"Failed to parse meal plan JSON after retries: {last_parse_error}")
+
+    # Post-process: inject exact saved recipe data when recipe names match
+    if recipe_mode != 'new_only' and saved_recipes:
+        saved_by_name = {r.get('name', '').lower(): r for r in saved_recipes}
+        for day in meal_plan.get('days', []):
+            for meal in day.get('meals', []):
+                match = saved_by_name.get(meal.get('recipeName', '').lower())
+                if match:
+                    # Check if any ingredient violates dietary restrictions
+                    has_violation = False
+                    if restrictions:
+                        for ing in match.get('ingredients', []):
+                            ing_name = ing.get('name', '').lower()
+                            for r in restrictions:
+                                r_key = r.lower().replace('_', '-').replace(' ', '-')
+                                detail = RESTRICTION_DETAILS.get(r_key, '')
+                                if ing_name and ing_name in detail.lower():
+                                    has_violation = True
+                                    break
+                            if has_violation:
+                                break
+
+                    # Only inject exact recipe if no dietary violations
+                    # (if there are violations, keep the LLM's adapted version)
+                    if not has_violation:
+                        meal['recipeId'] = match.get('id')
+                        meal['ingredients'] = match.get('ingredients', [])
+                        meal['instructions'] = match.get('instructions', [])
+                        meal['prepTimeMinutes'] = match.get('prepTimeMinutes') or meal.get('prepTimeMinutes', 0)
+                        meal['cookTimeMinutes'] = match.get('cookTimeMinutes') or meal.get('cookTimeMinutes', 0)
+                        meal['servings'] = match.get('servings') or meal.get('servings', 4)
+                        meal['cuisine'] = match.get('cuisine') or meal.get('cuisine')
+                        print(f"[DEBUG] Injected saved recipe '{match.get('name')}' exactly")
 
     # Run evaluations
     compliance_result = await check_meal_plan_compliance(meal_plan, restrictions)

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, UtensilsCrossed, BookOpen, ShoppingCart, Settings, Menu, X } from 'lucide-react';
+import { Home, UtensilsCrossed, BookOpen, Settings, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -10,7 +10,6 @@ const navItems = [
   { href: '/', label: 'Home', icon: Home },
   { href: '/meal-plan', label: 'Meal Plan', icon: UtensilsCrossed },
   { href: '/recipes', label: 'Recipes', icon: BookOpen },
-  { href: '/shopping', label: 'Shopping', icon: ShoppingCart },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
 

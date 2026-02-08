@@ -29,6 +29,7 @@ from mealplans.generate import handler as GenerateHandler
 from mealplans.regenerate import handler as RegenerateHandler
 from mealplans.index import handler as MealPlansHandler
 from shopping.index import handler as ShoppingHandler
+from shopping.telegram import handler as ShoppingTelegramHandler
 from mealplans.scores import handler as ScoresHandler
 
 
@@ -135,6 +136,18 @@ def shopping():
         return '', 200
     try:
         return run_handler(ShoppingHandler, request.method)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/shopping/telegram', methods=['POST', 'OPTIONS'])
+def shopping_telegram():
+    if request.method == 'OPTIONS':
+        return '', 200
+    try:
+        return run_handler(ShoppingTelegramHandler, 'POST')
     except Exception as e:
         import traceback
         traceback.print_exc()
