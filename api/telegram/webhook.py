@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from _lib.firebase_admin_client import (
     save_telegram_chat, get_telegram_chat, get_shopping_list,
-    get_current_meal_plan
+    get_current_meal_plan, get_latest_meal_plan
 )
 
 try:
@@ -22,17 +22,20 @@ def send_telegram_message(chat_id: int, text: str, parse_mode: str = 'Markdown')
     """Send a message via Telegram Bot API."""
     bot_token = os.environ.get('TELEGRAM_BOT_TOKEN')
     if not bot_token or not httpx:
+        print(f"[Telegram] Cannot send: bot_token={'set' if bot_token else 'missing'}, httpx={'ok' if httpx else 'missing'}")
         return
 
+    payload = {'chat_id': chat_id, 'text': text}
+    if parse_mode is not None:
+        payload['parse_mode'] = parse_mode
+
     with httpx.Client() as client:
-        client.post(
+        resp = client.post(
             f"https://api.telegram.org/bot{bot_token}/sendMessage",
-            json={
-                'chat_id': chat_id,
-                'text': text,
-                'parse_mode': parse_mode
-            }
+            json=payload
         )
+        if not resp.json().get('ok'):
+            print(f"[Telegram] sendMessage failed: {resp.text}")
 
 
 class handler(BaseHTTPRequestHandler):
@@ -246,10 +249,28 @@ class handler(BaseHTTPRequestHandler):
 
     def handle_ai_chat(self, chat_id: int, user_message: str):
         """Handle natural language messages using Gemini AI with Opik tracing."""
-        import asyncio
-        from _lib.opik_client import track_operation, init_opik
+        try:
+            self._do_ai_chat(chat_id, user_message)
+        except Exception as e:
+            print(f"[Telegram AI] Top-level error: {e}")
+            import traceback
+            traceback.print_exc()
+            send_telegram_message(
+                chat_id,
+                "Sorry, I couldn't process that right now. Try /help to see available commands."
+            )
 
-        init_opik()
+    def _do_ai_chat(self, chat_id: int, user_message: str):
+        """Internal AI chat logic."""
+        import asyncio
+
+        # Opik tracing is optional — don't crash if not installed
+        try:
+            from _lib.opik_client import track_operation, init_opik
+            init_opik()
+            has_opik = True
+        except Exception:
+            has_opik = False
 
         chat_data = get_telegram_chat_by_id(chat_id)
         if not chat_data:
@@ -267,7 +288,8 @@ class handler(BaseHTTPRequestHandler):
         week_start = monday.strftime('%Y-%m-%d')
         today_str = today.strftime('%Y-%m-%d')
 
-        meal_plan = get_current_meal_plan(family_id, week_start)
+        # Use latest meal plan (not just current week) so the bot always has context
+        meal_plan = get_latest_meal_plan(family_id)
 
         # Build context
         today_meals_text = "No meals planned for today."
@@ -331,6 +353,18 @@ If asked about a meal not in the plan, say so clearly.
 
 User's message: {user_message}"""
 
+        # Run with Opik tracing if available, otherwise without
+        if has_opik:
+            self._invoke_llm_with_tracing(
+                chat_id, user_message, prompt, meal_plan, family_id, track_operation
+            )
+        else:
+            self._invoke_llm(chat_id, prompt)
+
+    def _invoke_llm_with_tracing(self, chat_id, user_message, prompt, meal_plan, family_id, track_operation):
+        """Invoke LLM with Opik tracing."""
+        import asyncio
+
         with track_operation(
             name="telegram_ai_chat",
             input_data={
@@ -340,34 +374,43 @@ User's message: {user_message}"""
             },
             metadata={"operation": "telegram_chat", "family_id": family_id},
         ) as op:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
             try:
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-                try:
-                    from _lib.gemini_client import get_llm
-                    llm = get_llm(temperature=0.7)
-                    response = loop.run_until_complete(llm.ainvoke(prompt))
-                    ai_response = response.content
+                from _lib.gemini_client import get_llm
+                llm = get_llm(temperature=0.7)
+                response = loop.run_until_complete(llm.ainvoke(prompt))
+                ai_response = response.content
 
-                    op.set_output({"response": ai_response})
+                op.set_output({"response": ai_response})
 
-                    # Deterministic quality heuristic (no extra LLM call)
-                    relevance_score = _score_chat_relevance(
-                        user_message, ai_response, meal_plan
-                    )
-                    op.log_score("chat_relevance", relevance_score)
-
-                    # Send response (plain text to avoid Markdown parsing issues)
-                    send_telegram_message(chat_id, ai_response, parse_mode=None)
-                finally:
-                    loop.close()
-            except Exception as e:
-                print(f"[Telegram AI] Error: {e}")
-                op.log_score("chat_relevance", 0.0)
-                send_telegram_message(
-                    chat_id,
-                    "Sorry, I couldn't process that right now. Try /help to see available commands."
+                relevance_score = _score_chat_relevance(
+                    user_message, ai_response, meal_plan
                 )
+                op.log_score("chat_relevance", relevance_score)
+
+                send_telegram_message(chat_id, ai_response, parse_mode=None)
+            finally:
+                loop.close()
+
+    def _invoke_llm(self, chat_id, prompt):
+        """Invoke LLM without tracing (fallback when Opik is not available)."""
+        import asyncio
+
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            # Import Gemini without Opik tracer
+            from langchain_google_genai import ChatGoogleGenerativeAI
+            llm = ChatGoogleGenerativeAI(
+                model="gemini-2.5-flash",
+                google_api_key=os.environ.get('GOOGLE_API_KEY'),
+                temperature=0.7,
+            )
+            response = loop.run_until_complete(llm.ainvoke(prompt))
+            send_telegram_message(chat_id, response.content, parse_mode=None)
+        finally:
+            loop.close()
 
     def handle_help_command(self, chat_id: int):
         """Handle /help command."""

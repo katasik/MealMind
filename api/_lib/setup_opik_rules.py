@@ -84,11 +84,26 @@ DIETARY RESTRICTIONS: {{restrictions}}
 MEAL PLAN (JSON):
 {{meal_plan}}
 
+###############################################################
+# CRITICAL: PLANT-BASED PRODUCTS ARE NOT DAIRY — NEVER FLAG THEM
+###############################################################
+The following are ALL 100% DAIRY-FREE regardless of modifiers:
+- Almond milk (unsweetened, full-fat, vanilla, light, etc.)
+- Coconut milk (full-fat, light, unsweetened, canned, etc.)
+- Oat milk, soy milk, rice milk, cashew milk, hemp milk
+- Coconut cream, coconut yogurt, coconut ice cream
+- Peanut butter, almond butter, cashew butter, coconut butter
+- Vegan cheese, nutritional yeast
+
+If an ingredient contains "almond milk", "coconut milk", "oat milk", \
+or any plant-based milk with ANY prefix/suffix — it is NOT dairy. \
+Do NOT flag it. This is the #1 mistake to avoid.
+###############################################################
+
 Go through every recipe and every ingredient. Flag an ingredient ONLY if it \
-genuinely violates a listed restriction. Common mistakes to avoid:
-- Eggs are NOT dairy.  They are safe for dairy-free diets.
+genuinely violates a listed restriction. Other common mistakes to avoid:
+- Eggs are NOT dairy. They are safe for dairy-free diets.
 - Eggs ARE safe for diabetic-friendly diets (high protein, low carb).
-- Coconut milk, oat milk, soy milk are NOT dairy.
 - Olive oil and coconut oil are fine for diabetic-friendly diets.
 - "Diabetic-friendly" only restricts added sugar and refined carbs; whole foods are fine.
 - Hidden allergens to watch: worcestershire sauce (fish), regular soy sauce (gluten).
@@ -96,6 +111,9 @@ genuinely violates a listed restriction. Common mistakes to avoid:
 Score the meal plan:
 - 1.0 if fully compliant with all dietary restrictions (no real violations)
 - 0.0 if any real allergen violation is found
+
+Before scoring, double-check: did you flag any plant-based milk? If so, \
+REMOVE that flag — it is not a violation.
 
 List any violations you find as part of your reasoning.
 """

@@ -32,7 +32,7 @@ export default function HomePage() {
   const todaysMeals = getTodaysMeals(mealPlan);
 
   return (
-    <div className="max-w-[900px] mx-auto space-y-10">
+    <div className="max-w-[900px] mx-auto space-y-12">
       {/* Badge */}
       <div
         className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-primary-50 text-primary-600 text-[13px] font-semibold border border-primary-100 animate-fade-in"
@@ -42,19 +42,20 @@ export default function HomePage() {
       </div>
 
       {/* Hero */}
-      <div className="space-y-3 animate-fade-in" style={{ animationDelay: '0.1s' }}>
-        <h1 className="text-[34px] font-bold tracking-tighter leading-tight text-gray-950">
-          Open the app.{' '}
-          <span className="gradient-text">Dinner is decided.</span>
+      <div className="space-y-4 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+        <h1 className="text-[32px] sm:text-[38px] font-bold tracking-tighter leading-[1.15] text-gray-950">
+          From &lsquo;what should we eat&rsquo;{' '}
+          <br className="hidden sm:block" />
+          <span className="gradient-text">to a plan in a few seconds.</span>
         </h1>
         <p className="text-base text-gray-500 max-w-[560px] leading-relaxed">
-          MealMind turns 30 minutes of recipe scrolling into a 30-second meal plan — tailored
-          to your family&apos;s diet, taste, and schedule.
+          MealMind turns meal planning struggles into lightning-fast meal plans, tailored
+          to your diet, taste, and schedule.
         </p>
         <div className="pt-2">
           <Link
             href="/meal-plan"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition-colors shadow-sm"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-xl font-semibold hover:bg-gray-800 transition-colors shadow-sm"
           >
             <Sparkles className="w-4 h-4" />
             Generate Your Meal Plan
@@ -64,14 +65,14 @@ export default function HomePage() {
       </div>
 
       {/* 3 Step Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
         <StepCard
           icon={<Settings className="w-5 h-5" />}
           iconBg="bg-primary-50"
           iconColor="text-primary-600"
           step="Step 1"
-          title="Set your dietary needs"
-          description="Add allergies, preferences, and favourite recipes once — MealMind remembers them forever."
+          title="Set needs & preferences"
+          description="Add preferred ingredients, diets, and favourite recipes once."
           delay={0.35}
         />
         <StepCard
@@ -79,17 +80,17 @@ export default function HomePage() {
           iconBg="bg-accent-50"
           iconColor="text-accent-600"
           step="Step 2"
-          title="Get a weekly plan"
-          description="AI generates a quality-checked meal plan in seconds, built from trusted recipes you'll actually cook."
+          title="Get a plan"
+          description="AI generates a quality-checked meal plan, built from using your saved recipes or generating something completely new."
           delay={0.45}
         />
         <StepCard
           icon={<Share2 className="w-5 h-5" />}
-          iconBg="bg-green-50"
-          iconColor="text-green-600"
+          iconBg="bg-emerald-50"
+          iconColor="text-emerald-600"
           step="Step 3"
           title="Shop & share"
-          description="One-tap shopping list and calendar export. Share the plan with your family in the group chat."
+          description="One-tap shopping list and calendar export. Share the plan and discuss it with others if you'd like."
           delay={0.55}
         />
       </div>
@@ -103,10 +104,10 @@ export default function HomePage() {
       </div>
 
       {/* Stats Row */}
-      <div className="flex items-center gap-4 flex-wrap animate-fade-in" style={{ animationDelay: '0.85s' }}>
+      <div className="flex items-center gap-5 flex-wrap animate-fade-in" style={{ animationDelay: '0.85s' }}>
         <Stat number="87%" label="struggle with meal decisions weekly" />
         <div className="w-px h-8 bg-gray-200 hidden sm:block" />
-        <Stat number="30s" label="to a full weekly plan" />
+        <Stat number="60s" label="to a full weekly plan" />
         <div className="w-px h-8 bg-gray-200 hidden sm:block" />
         <Stat number="0" label="decision fatigue" />
       </div>
@@ -117,7 +118,7 @@ export default function HomePage() {
           <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
         </div>
       ) : mealPlan ? (
-        <div className="space-y-4 pt-6 border-t border-gray-200">
+        <div className="space-y-4 pt-8 border-t border-gray-200">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900 tracking-tight">
               Your Current Plan
@@ -173,8 +174,8 @@ export default function HomePage() {
               href="/recipes"
               className="flex items-center gap-3 bg-white border border-gray-200 rounded-xl p-4 hover:border-gray-300 hover:shadow-sm transition-all"
             >
-              <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center">
-                <BookOpen className="w-5 h-5 text-green-600" />
+              <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center">
+                <BookOpen className="w-5 h-5 text-emerald-600" />
               </div>
               <div>
                 <p className="text-sm font-semibold text-gray-900">Recipes</p>
@@ -209,7 +210,7 @@ function StepCard({
       <div className={`w-10 h-10 rounded-[10px] flex items-center justify-center mb-4 ${iconBg}`}>
         <span className={iconColor}>{icon}</span>
       </div>
-      <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-500 mb-2">{step}</p>
+      <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 mb-2">{step}</p>
       <h3 className="text-base font-semibold tracking-tight text-gray-900 mb-2">{title}</h3>
       <p className="text-sm text-gray-500 leading-relaxed">{description}</p>
     </div>

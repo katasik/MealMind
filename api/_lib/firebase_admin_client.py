@@ -107,6 +107,18 @@ def get_current_meal_plan(family_id: str, week_start: str) -> Optional[dict]:
     return None
 
 
+def get_latest_meal_plan(family_id: str) -> Optional[dict]:
+    """Get the most recent meal plan for a family (any week)."""
+    db = get_firestore()
+    plans = db.collection('mealPlans').where(
+        filter=FieldFilter('familyId', '==', family_id)
+    ).order_by('weekStartDate', direction=firestore.Query.DESCENDING).limit(1).stream()
+    plans_list = list(plans)
+    if plans_list:
+        return {'id': plans_list[0].id, **plans_list[0].to_dict()}
+    return None
+
+
 def save_meal_plan(family_id: str, week_start: str, meal_plan: dict, evaluation: dict, trace_id: str) -> str:
     """Save or update a meal plan."""
     print(f"DEBUG save_meal_plan: Starting save for family {family_id}, week {week_start}")

@@ -22,6 +22,12 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 app = Flask(__name__)
 CORS(app)
 
+
+@app.route('/', methods=['GET', 'HEAD'])
+def health():
+    return jsonify({'status': 'ok'}), 200
+
+
 # Import handlers
 from recipes.parse import handler as ParseHandler
 from recipes.index import handler as RecipesHandler
@@ -31,6 +37,14 @@ from mealplans.index import handler as MealPlansHandler
 from shopping.index import handler as ShoppingHandler
 from shopping.telegram import handler as ShoppingTelegramHandler
 from mealplans.scores import handler as ScoresHandler
+import importlib.util
+_spec = importlib.util.spec_from_file_location(
+    "telegram_webhook_handler",
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "telegram", "webhook.py")
+)
+_mod = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_mod)
+TelegramWebhookHandler = _mod.handler
 
 
 def run_handler(handler_class, method='POST'):
@@ -148,6 +162,18 @@ def shopping_telegram():
         return '', 200
     try:
         return run_handler(ShoppingTelegramHandler, 'POST')
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/telegram/webhook', methods=['POST', 'OPTIONS'])
+def telegram_webhook():
+    if request.method == 'OPTIONS':
+        return '', 200
+    try:
+        return run_handler(TelegramWebhookHandler, 'POST')
     except Exception as e:
         import traceback
         traceback.print_exc()
