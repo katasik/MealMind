@@ -49,8 +49,8 @@ export default function HomePage() {
           <span className="gradient-text">to a plan in a few seconds.</span>
         </h1>
         <p className="text-base text-gray-500 max-w-[560px] leading-relaxed">
-          MealMind turns 30 minutes of recipe scrolling into a one-minute meal plan — tailored
-          to your family&apos;s diet, taste, and schedule.
+          MealMind turns meal planning struggles into lightning-fast meal plans, tailored
+          to your diet, taste, and schedule.
         </p>
         <div className="pt-2">
           <Link
