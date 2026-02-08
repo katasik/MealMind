@@ -199,15 +199,15 @@ class handler(BaseHTTPRequestHandler):
                 prompt = RECIPE_PARSE_PROMPT.format(content=content[:8000])
                 response = await llm.ainvoke(prompt)
 
-                # Extract JSON
+                # Extract JSON — use raw_decode to handle extra trailing data
                 response_content = response.content
                 start_idx = response_content.find('{')
-                end_idx = response_content.rfind('}') + 1
 
                 if start_idx == -1:
                     raise ValueError("Could not extract recipe from content")
 
-                recipe = json.loads(response_content[start_idx:end_idx])
+                decoder = json.JSONDecoder()
+                recipe, _ = decoder.raw_decode(response_content, start_idx)
 
                 # Evaluate extraction quality
                 evaluation = await evaluate_recipe_extraction(content, recipe, source_type)
