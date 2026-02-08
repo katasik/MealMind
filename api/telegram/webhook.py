@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from _lib.firebase_admin_client import (
     save_telegram_chat, get_telegram_chat, get_shopping_list,
-    get_current_meal_plan
+    get_current_meal_plan, get_latest_meal_plan
 )
 
 try:
@@ -22,17 +22,20 @@ def send_telegram_message(chat_id: int, text: str, parse_mode: str = 'Markdown')
     """Send a message via Telegram Bot API."""
     bot_token = os.environ.get('TELEGRAM_BOT_TOKEN')
     if not bot_token or not httpx:
+        print(f"[Telegram] Cannot send: bot_token={'set' if bot_token else 'missing'}, httpx={'ok' if httpx else 'missing'}")
         return
 
+    payload = {'chat_id': chat_id, 'text': text}
+    if parse_mode is not None:
+        payload['parse_mode'] = parse_mode
+
     with httpx.Client() as client:
-        client.post(
+        resp = client.post(
             f"https://api.telegram.org/bot{bot_token}/sendMessage",
-            json={
-                'chat_id': chat_id,
-                'text': text,
-                'parse_mode': parse_mode
-            }
+            json=payload
         )
+        if not resp.json().get('ok'):
+            print(f"[Telegram] sendMessage failed: {resp.text}")
 
 
 class handler(BaseHTTPRequestHandler):
@@ -285,7 +288,8 @@ class handler(BaseHTTPRequestHandler):
         week_start = monday.strftime('%Y-%m-%d')
         today_str = today.strftime('%Y-%m-%d')
 
-        meal_plan = get_current_meal_plan(family_id, week_start)
+        # Use latest meal plan (not just current week) so the bot always has context
+        meal_plan = get_latest_meal_plan(family_id)
 
         # Build context
         today_meals_text = "No meals planned for today."
