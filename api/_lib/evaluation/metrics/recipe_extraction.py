@@ -5,6 +5,7 @@ Judge 1: Evaluates completeness and accuracy
 Judge 2: Independent verification for hallucinations
 """
 
+import asyncio
 import json
 from typing import Dict, Any
 from _lib.gemini_client import get_judge_llm
@@ -79,15 +80,6 @@ Return ONLY valid JSON:
     "reasoning": "brief explanation"
 }}"""
 
-    try:
-        judge1_response = await llm.ainvoke(judge1_prompt)
-        content = judge1_response.content
-        start = content.find('{')
-        end = content.rfind('}') + 1
-        judge1_scores = json.loads(content[start:end]) if start != -1 else {}
-    except Exception:
-        judge1_scores = {"error": "parse_failed"}
-
     # Judge 2: Independent verification
     judge2_prompt = f"""Compare the extracted recipe to the source. Identify discrepancies.
 
@@ -112,14 +104,21 @@ Return ONLY valid JSON:
     "confidence": 0.0-1.0
 }}"""
 
-    try:
-        judge2_response = await llm.ainvoke(judge2_prompt)
-        content = judge2_response.content
-        start = content.find('{')
-        end = content.rfind('}') + 1
-        judge2_result = json.loads(content[start:end]) if start != -1 else {}
-    except Exception:
-        judge2_result = {"error": "parse_failed"}
+    # Run both judges in parallel to cut evaluation time in half
+    async def _run_judge(prompt):
+        try:
+            response = await llm.ainvoke(prompt)
+            content = response.content
+            start = content.find('{')
+            end = content.rfind('}') + 1
+            return json.loads(content[start:end]) if start != -1 else {}
+        except Exception:
+            return {"error": "parse_failed"}
+
+    judge1_scores, judge2_result = await asyncio.gather(
+        _run_judge(judge1_prompt),
+        _run_judge(judge2_prompt)
+    )
 
     # Calculate final score
     if "error" not in judge1_scores:
