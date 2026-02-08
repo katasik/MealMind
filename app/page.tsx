@@ -6,7 +6,7 @@ import {
   Sparkles, Settings, Share2, BadgeCheck, BookOpen,
   Calendar, MessageCircle, Clock, Users, ArrowRight, Loader2
 } from 'lucide-react';
-import { getCurrentMealPlan, initializeDemoFamily } from '@/lib/firebase';
+import { getLatestMealPlan, initializeDemoFamily } from '@/lib/firebase';
 import type { MealPlan, PlannedMeal } from '@/lib/types';
 
 export default function HomePage() {
@@ -20,7 +20,7 @@ export default function HomePage() {
   const loadData = async () => {
     try {
       const id = await initializeDemoFamily();
-      const plan = await getCurrentMealPlan(id);
+      const plan = await getLatestMealPlan(id);
       setMealPlan(plan);
     } catch (error) {
       console.error('Failed to load:', error);

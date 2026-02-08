@@ -3,10 +3,11 @@
 import { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import ShoppingList from '@/components/ShoppingList';
-import { getCurrentMealPlan, initializeDemoFamily } from '@/lib/firebase';
+import { getLatestMealPlan, initializeDemoFamily } from '@/lib/firebase';
 import type { MealPlan } from '@/lib/types';
 
 export default function ShoppingPage() {
+  const [familyId, setFamilyId] = useState<string | null>(null);
   const [mealPlan, setMealPlan] = useState<MealPlan | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -16,8 +17,9 @@ export default function ShoppingPage() {
 
   const loadData = async () => {
     try {
-      const familyId = await initializeDemoFamily();
-      const plan = await getCurrentMealPlan(familyId);
+      const id = await initializeDemoFamily();
+      setFamilyId(id);
+      const plan = await getLatestMealPlan(id);
       setMealPlan(plan);
     } catch (error) {
       console.error('Failed to load:', error);
@@ -37,8 +39,8 @@ export default function ShoppingPage() {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        {mealPlan ? (
-          <ShoppingList mealPlanId={mealPlan.id} />
+        {mealPlan && familyId ? (
+          <ShoppingList mealPlanId={mealPlan.id} familyId={familyId} />
         ) : (
           <div className="text-center py-12">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">

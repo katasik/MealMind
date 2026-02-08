@@ -13,6 +13,20 @@ export function getWeekStartDate(date: Date = new Date()): string {
   return d.toISOString().split('T')[0];
 }
 
+export function shiftWeek(weekStart: string, direction: -1 | 1): string {
+  const d = new Date(weekStart);
+  d.setDate(d.getDate() + direction * 7);
+  return d.toISOString().split('T')[0];
+}
+
+export function formatWeekRange(weekStart: string): string {
+  const start = new Date(weekStart);
+  const end = new Date(weekStart);
+  end.setDate(end.getDate() + 6);
+  const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
+  return `${start.toLocaleDateString('en-US', opts)} – ${end.toLocaleDateString('en-US', opts)}`;
+}
+
 export function formatDate(dateString: string): string {
   const date = new Date(dateString);
   return date.toLocaleDateString('en-US', {

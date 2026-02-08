@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Calendar, Sparkles, Check, AlertCircle, Loader2, Trash2, Download, Info, X, BookOpen, Wand2 } from 'lucide-react';
+import { Calendar, Sparkles, Check, AlertCircle, Loader2, Trash2, Download, Info, X, BookOpen, Wand2, ChevronLeft, ChevronRight } from 'lucide-react';
 import MealCard from './MealCard';
 import MealDetailsModal from './MealDetailsModal';
-import { cn, formatDate, getWeekStartDate } from '@/lib/utils';
+import { cn, formatDate, getWeekStartDate, shiftWeek, formatWeekRange } from '@/lib/utils';
 import { generateMealPlan, regenerateMeal, deleteMealPlan, approveMealPlan, downloadICalendar, getOpikScores } from '@/lib/api';
 import type { MealPlan, MealType, PlannedMeal, Recipe, RecipeMode } from '@/lib/types';
 
@@ -12,9 +12,11 @@ interface MealPlannerProps {
   initialMealPlan?: MealPlan | null;
   familyId: string;
   onMealPlanChange?: (mealPlan: MealPlan | null) => void;
+  viewedWeekStart?: string | null;
+  onWeekChange?: (weekStart: string) => void;
 }
 
-export default function MealPlanner({ initialMealPlan, familyId, onMealPlanChange }: MealPlannerProps) {
+export default function MealPlanner({ initialMealPlan, familyId, onMealPlanChange, viewedWeekStart, onWeekChange }: MealPlannerProps) {
   const [mealPlan, setMealPlanState] = useState<MealPlan | null>(initialMealPlan || null);
 
   // Use a ref to always have access to the latest callback without causing re-renders
@@ -28,7 +30,20 @@ export default function MealPlanner({ initialMealPlan, familyId, onMealPlanChang
     setMealPlanState(plan);
     onMealPlanChangeRef.current?.(plan);
   }, []);
+  // Sync internal state when parent navigates to a different week
+  useEffect(() => {
+    setMealPlanState(initialMealPlan || null);
+  }, [initialMealPlan]);
+
+  // Sync startDate to viewed week when no plan exists (so generate targets that week)
+  useEffect(() => {
+    if (viewedWeekStart && !mealPlan) {
+      setStartDate(viewedWeekStart);
+    }
+  }, [viewedWeekStart, mealPlan]);
+
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
   const [regeneratingMeal, setRegeneratingMeal] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedDay, setSelectedDay] = useState(0);
@@ -207,10 +222,56 @@ export default function MealPlanner({ initialMealPlan, familyId, onMealPlanChang
     setSelectedMeal(null);
   };
 
+  const handlePrevWeek = async () => {
+    if (!viewedWeekStart || !onWeekChange) return;
+    setIsNavigating(true);
+    await onWeekChange(shiftWeek(viewedWeekStart, -1));
+    setIsNavigating(false);
+    setSelectedDay(0);
+  };
+
+  const handleNextWeek = async () => {
+    if (!viewedWeekStart || !onWeekChange) return;
+    setIsNavigating(true);
+    await onWeekChange(shiftWeek(viewedWeekStart, 1));
+    setIsNavigating(false);
+    setSelectedDay(0);
+  };
+
+  const WeekNavigation = () => (
+    viewedWeekStart && onWeekChange ? (
+      <div className="flex items-center justify-center gap-3">
+        <button
+          onClick={handlePrevWeek}
+          disabled={isNavigating}
+          className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-50"
+          title="Previous week"
+        >
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+        <p className="text-gray-500 font-medium min-w-[180px] text-center">
+          {formatWeekRange(viewedWeekStart)}
+        </p>
+        <button
+          onClick={handleNextWeek}
+          disabled={isNavigating}
+          className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-50"
+          title="Next week"
+        >
+          <ChevronRight className="w-5 h-5" />
+        </button>
+      </div>
+    ) : null
+  );
+
   // Empty state
   if (!mealPlan && !isGenerating) {
     return (
-      <div className="text-center py-12">
+      <div>
+        {/* Week navigation even when no plan exists */}
+        <WeekNavigation />
+
+        <div className="text-center py-12">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary-50 mb-4">
           <Calendar className="w-8 h-8 text-primary-600" />
         </div>
@@ -250,6 +311,7 @@ export default function MealPlanner({ initialMealPlan, familyId, onMealPlanChang
             <span>{error}</span>
           </div>
         )}
+        </div>
       </div>
     );
   }
@@ -277,7 +339,11 @@ export default function MealPlanner({ initialMealPlan, familyId, onMealPlanChang
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Weekly Meal Plan</h1>
-          <p className="text-gray-500">Week of {mealPlan.weekStartDate}</p>
+          {viewedWeekStart && onWeekChange ? (
+            <WeekNavigation />
+          ) : (
+            <p className="text-gray-500">Week of {mealPlan.weekStartDate}</p>
+          )}
         </div>
 
         <div className="flex items-center space-x-3 flex-wrap">

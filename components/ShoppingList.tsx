@@ -3,18 +3,22 @@
 import { useState, useEffect } from 'react';
 import { ShoppingCart, Check, Loader2, Send, RefreshCw } from 'lucide-react';
 import { cn, getCategoryIcon } from '@/lib/utils';
-import { getShoppingListApi, createShoppingList, updateShoppingItem } from '@/lib/api';
+import { getShoppingListApi, createShoppingList, updateShoppingItem, sendShoppingListToTelegram } from '@/lib/api';
+import { getTelegramChat } from '@/lib/firebase';
 import type { ShoppingList as ShoppingListType, ShoppingItem } from '@/lib/types';
 
 interface ShoppingListProps {
   mealPlanId: string;
+  familyId: string;
 }
 
-export default function ShoppingList({ mealPlanId }: ShoppingListProps) {
+export default function ShoppingList({ mealPlanId, familyId }: ShoppingListProps) {
   const [shoppingList, setShoppingList] = useState<ShoppingListType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [updatingItems, setUpdatingItems] = useState<Set<string>>(new Set());
+  const [isSendingTelegram, setIsSendingTelegram] = useState(false);
+  const [telegramStatus, setTelegramStatus] = useState<'idle' | 'success' | 'error' | 'no-chat'>('idle');
 
   useEffect(() => {
     loadShoppingList();
@@ -77,6 +81,33 @@ export default function ShoppingList({ mealPlanId }: ShoppingListProps) {
         next.delete(itemId);
         return next;
       });
+    }
+  };
+
+  const handleSendToTelegram = async () => {
+    if (!shoppingList) return;
+
+    setIsSendingTelegram(true);
+    setTelegramStatus('idle');
+
+    try {
+      const chat = await getTelegramChat(familyId);
+      if (!chat) {
+        setTelegramStatus('no-chat');
+        return;
+      }
+
+      const result = await sendShoppingListToTelegram(shoppingList.id, chat.chatId);
+      if (result.success) {
+        setTelegramStatus('success');
+        setTimeout(() => setTelegramStatus('idle'), 3000);
+      } else {
+        setTelegramStatus('error');
+      }
+    } catch {
+      setTelegramStatus('error');
+    } finally {
+      setIsSendingTelegram(false);
     }
   };
 
@@ -157,12 +188,41 @@ export default function ShoppingList({ mealPlanId }: ShoppingListProps) {
             <RefreshCw className={cn('w-4 h-4', isGenerating && 'animate-spin')} />
             <span>Refresh</span>
           </button>
-          <button className="inline-flex items-center space-x-2 bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors">
-            <Send className="w-4 h-4" />
-            <span>Send to Telegram</span>
+          <button
+            onClick={handleSendToTelegram}
+            disabled={isSendingTelegram}
+            className="inline-flex items-center space-x-2 bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors disabled:opacity-50"
+          >
+            {isSendingTelegram ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Sending...</span>
+              </>
+            ) : telegramStatus === 'success' ? (
+              <>
+                <Check className="w-4 h-4" />
+                <span>Sent!</span>
+              </>
+            ) : (
+              <>
+                <Send className="w-4 h-4" />
+                <span>Send to Telegram</span>
+              </>
+            )}
           </button>
         </div>
       </div>
+
+      {telegramStatus === 'no-chat' && (
+        <p className="text-sm text-amber-600 bg-amber-50 px-3 py-2 rounded-lg">
+          No Telegram chat linked. Start a conversation with the MealMind bot on Telegram and send <code className="font-mono bg-amber-100 px-1 rounded">/start</code> to link your chat.
+        </p>
+      )}
+      {telegramStatus === 'error' && (
+        <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">
+          Failed to send shopping list. Please try again.
+        </p>
+      )}
 
       {/* Progress bar */}
       <div className="bg-gray-100 rounded-full h-3 overflow-hidden">
