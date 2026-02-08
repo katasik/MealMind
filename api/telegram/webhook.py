@@ -245,8 +245,11 @@ class handler(BaseHTTPRequestHandler):
         send_telegram_message(chat_id, '\n'.join(lines))
 
     def handle_ai_chat(self, chat_id: int, user_message: str):
-        """Handle natural language messages using Gemini AI."""
+        """Handle natural language messages using Gemini AI with Opik tracing."""
         import asyncio
+        from _lib.opik_client import track_operation, init_opik
+
+        init_opik()
 
         chat_data = get_telegram_chat_by_id(chat_id)
         if not chat_data:
@@ -265,7 +268,6 @@ class handler(BaseHTTPRequestHandler):
         today_str = today.strftime('%Y-%m-%d')
 
         meal_plan = get_current_meal_plan(family_id, week_start)
-        shopping_list = None
 
         # Build context
         today_meals_text = "No meals planned for today."
@@ -329,25 +331,43 @@ If asked about a meal not in the plan, say so clearly.
 
 User's message: {user_message}"""
 
-        try:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
+        with track_operation(
+            name="telegram_ai_chat",
+            input_data={
+                "user_message": user_message,
+                "chat_id": str(chat_id),
+                "has_meal_plan": bool(meal_plan),
+            },
+            metadata={"operation": "telegram_chat", "family_id": family_id},
+        ) as op:
             try:
-                from _lib.gemini_client import get_llm
-                llm = get_llm(temperature=0.7)
-                response = loop.run_until_complete(llm.ainvoke(prompt))
-                ai_response = response.content
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                try:
+                    from _lib.gemini_client import get_llm
+                    llm = get_llm(temperature=0.7)
+                    response = loop.run_until_complete(llm.ainvoke(prompt))
+                    ai_response = response.content
 
-                # Send response (plain text to avoid Markdown parsing issues)
-                send_telegram_message(chat_id, ai_response, parse_mode=None)
-            finally:
-                loop.close()
-        except Exception as e:
-            print(f"[Telegram AI] Error: {e}")
-            send_telegram_message(
-                chat_id,
-                "Sorry, I couldn't process that right now. Try /help to see available commands."
-            )
+                    op.set_output({"response": ai_response})
+
+                    # Deterministic quality heuristic (no extra LLM call)
+                    relevance_score = _score_chat_relevance(
+                        user_message, ai_response, meal_plan
+                    )
+                    op.log_score("chat_relevance", relevance_score)
+
+                    # Send response (plain text to avoid Markdown parsing issues)
+                    send_telegram_message(chat_id, ai_response, parse_mode=None)
+                finally:
+                    loop.close()
+            except Exception as e:
+                print(f"[Telegram AI] Error: {e}")
+                op.log_score("chat_relevance", 0.0)
+                send_telegram_message(
+                    chat_id,
+                    "Sorry, I couldn't process that right now. Try /help to see available commands."
+                )
 
     def handle_help_command(self, chat_id: int):
         """Handle /help command."""
@@ -381,6 +401,38 @@ User's message: {user_message}"""
         self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type')
         self.end_headers()
+
+
+def _score_chat_relevance(user_message: str, response: str, meal_plan: dict) -> float:
+    """Deterministic relevance scoring for Telegram chat responses."""
+    score = 0.5  # Base score
+
+    # Check response length (not too short, not too long)
+    word_count = len(response.split())
+    if 10 <= word_count <= 200:
+        score += 0.2
+    elif word_count < 5:
+        score -= 0.3
+
+    # Check if response mentions relevant food terms when asking about meals
+    food_keywords = ["dinner", "lunch", "breakfast", "recipe", "ingredient", "cook"]
+    msg_lower = user_message.lower()
+    resp_lower = response.lower()
+
+    if any(kw in msg_lower for kw in food_keywords):
+        if any(kw in resp_lower for kw in food_keywords):
+            score += 0.2
+
+    # Check if it references actual recipes from the plan
+    if meal_plan:
+        for day in meal_plan.get("days", []):
+            for meal in day.get("meals", []):
+                name = (meal.get("recipeName") or "").lower()
+                if name and name in resp_lower:
+                    score += 0.1
+                    break
+
+    return min(1.0, max(0.0, score))
 
 
 def get_telegram_chat_by_id(chat_id: int) -> dict:

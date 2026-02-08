@@ -101,12 +101,81 @@
         "passed": false,
         "violationContains": "peanut"
       }
+    },
+    {
+      "name": "Eggs are safe for dairy-free (edge case)",
+      "recipe": {
+        "name": "Veggie Omelette",
+        "ingredients": [
+          {"name": "eggs", "amount": 3, "unit": "large"},
+          {"name": "bell pepper", "amount": 0.5, "unit": "medium"},
+          {"name": "spinach", "amount": 1, "unit": "cup"},
+          {"name": "olive oil", "amount": 1, "unit": "tbsp"}
+        ]
+      },
+      "restrictions": ["dairy-free"],
+      "expected": {
+        "passed": true,
+        "violations": []
+      }
+    },
+    {
+      "name": "Coconut milk safe for dairy-free (safe compound)",
+      "recipe": {
+        "name": "Thai Coconut Soup",
+        "ingredients": [
+          {"name": "full-fat coconut milk", "amount": 1, "unit": "can"},
+          {"name": "lemongrass", "amount": 2, "unit": "stalks"},
+          {"name": "shrimp", "amount": 1, "unit": "lb"},
+          {"name": "lime juice", "amount": 2, "unit": "tbsp"}
+        ]
+      },
+      "restrictions": ["dairy-free"],
+      "expected": {
+        "passed": true,
+        "violations": []
+      }
+    },
+    {
+      "name": "Multi-restriction: vegan + gluten-free pass",
+      "recipe": {
+        "name": "Quinoa Black Bean Bowl",
+        "ingredients": [
+          {"name": "quinoa", "amount": 1, "unit": "cup"},
+          {"name": "black beans", "amount": 1, "unit": "can"},
+          {"name": "avocado", "amount": 1, "unit": "whole"},
+          {"name": "lime juice", "amount": 1, "unit": "tbsp"},
+          {"name": "corn", "amount": 0.5, "unit": "cup"}
+        ]
+      },
+      "restrictions": ["vegan", "gluten-free"],
+      "expected": {
+        "passed": true,
+        "violations": []
+      }
+    },
+    {
+      "name": "Multi-restriction: nut-free + dairy-free fail on cheese",
+      "recipe": {
+        "name": "Caprese Salad",
+        "ingredients": [
+          {"name": "tomatoes", "amount": 3, "unit": "medium"},
+          {"name": "fresh mozzarella", "amount": 8, "unit": "oz"},
+          {"name": "basil leaves", "amount": 10, "unit": "leaves"},
+          {"name": "olive oil", "amount": 2, "unit": "tbsp"}
+        ]
+      },
+      "restrictions": ["nut-free", "dairy-free"],
+      "expected": {
+        "passed": false,
+        "violationContains": "mozzarella"
+      }
     }
   ],
   "recipe_extraction": [
     {
       "name": "Basic recipe with clear structure",
-      "source": "Classic Banana Bread\n\nIngredients:\n- 3 ripe bananas\n- 1/3 cup melted butter\n- 3/4 cup sugar\n- 1 egg\n- 1 tsp vanilla\n- 1 tsp baking soda\n- 1.5 cups flour\n\nInstructions:\n1. Preheat oven to 350°F\n2. Mash bananas in a bowl\n3. Mix in melted butter\n4. Add sugar, egg, and vanilla\n5. Stir in baking soda and flour\n6. Pour into greased loaf pan\n7. Bake 60-65 minutes",
+      "source": "Classic Banana Bread\n\nIngredients:\n- 3 ripe bananas\n- 1/3 cup melted butter\n- 3/4 cup sugar\n- 1 egg\n- 1 tsp vanilla\n- 1 tsp baking soda\n- 1.5 cups flour\n\nInstructions:\n1. Preheat oven to 350\u00b0F\n2. Mash bananas in a bowl\n3. Mix in melted butter\n4. Add sugar, egg, and vanilla\n5. Stir in baking soda and flour\n6. Pour into greased loaf pan\n7. Bake 60-65 minutes",
       "sourceType": "text",
       "expectedFields": {
         "name": "Banana Bread",
@@ -116,12 +185,32 @@
     },
     {
       "name": "Recipe with metric measurements",
-      "source": "Simple Tomato Soup\n\nIngredients:\n- 1kg tomatoes, chopped\n- 500ml vegetable stock\n- 2 cloves garlic\n- 1 tbsp olive oil\n- Salt and pepper to taste\n\nMethod:\n1. Heat oil in a large pot\n2. Sauté garlic for 1 minute\n3. Add tomatoes and cook for 10 minutes\n4. Add stock and simmer for 20 minutes\n5. Blend until smooth\n6. Season with salt and pepper",
+      "source": "Simple Tomato Soup\n\nIngredients:\n- 1kg tomatoes, chopped\n- 500ml vegetable stock\n- 2 cloves garlic\n- 1 tbsp olive oil\n- Salt and pepper to taste\n\nMethod:\n1. Heat oil in a large pot\n2. Saut\u00e9 garlic for 1 minute\n3. Add tomatoes and cook for 10 minutes\n4. Add stock and simmer for 20 minutes\n5. Blend until smooth\n6. Season with salt and pepper",
       "sourceType": "text",
       "expectedFields": {
         "name": "Tomato Soup",
         "ingredientCount": 5,
         "instructionCount": 6
+      }
+    },
+    {
+      "name": "Blog-style recipe with narrative",
+      "source": "My Grandma's Famous Guacamole\n\nThis recipe has been in our family for three generations! It's the perfect party dip.\n\nPrep time: 10 minutes\nServings: 4\n\nWhat you'll need:\n3 ripe avocados\n1 lime, juiced\n1 tsp salt\n1/2 cup diced onion\n3 tbsp chopped fresh cilantro\n2 roma tomatoes, diced\n1 tsp minced garlic\n1 pinch ground cayenne pepper\n\nHow to make it:\nCut avocados in half and remove pit. Scoop out flesh and place in a bowl.\nMash with a fork until chunky.\nStir in lime juice and salt.\nMix in onion, cilantro, tomatoes, and garlic.\nAdd cayenne pepper.\nRefrigerate for 1 hour for best flavor.",
+      "sourceType": "text",
+      "expectedFields": {
+        "name": "Guacamole",
+        "ingredientCount": 8,
+        "instructionCount": 6
+      }
+    },
+    {
+      "name": "Minimal recipe with few details",
+      "source": "Quick Pasta Aglio e Olio\n\nBoil 400g spaghetti. In a pan, heat 1/4 cup olive oil with 6 sliced garlic cloves and 1 tsp red pepper flakes until fragrant. Toss with drained pasta and top with parsley and parmesan.",
+      "sourceType": "text",
+      "expectedFields": {
+        "name": "Pasta Aglio e Olio",
+        "ingredientCount": 5,
+        "instructionCount": 3
       }
     }
   ],
@@ -147,6 +236,30 @@
         ]
       },
       "expectedMaxScore": 0.5
+    },
+    {
+      "name": "Moderately diverse plan",
+      "mealPlan": {
+        "days": [
+          {"dayName": "Monday", "meals": [
+            {"recipeName": "Oatmeal with Berries", "cuisine": "American", "ingredients": [{"name": "oats"}, {"name": "blueberries"}, {"name": "honey"}]},
+            {"recipeName": "Grilled Chicken Salad", "cuisine": "American", "ingredients": [{"name": "chicken"}, {"name": "lettuce"}, {"name": "tomato"}]},
+            {"recipeName": "Beef Tacos", "cuisine": "Mexican", "ingredients": [{"name": "beef"}, {"name": "tortilla"}, {"name": "cheese"}]}
+          ]},
+          {"dayName": "Tuesday", "meals": [
+            {"recipeName": "Greek Yogurt Parfait", "cuisine": "Greek", "ingredients": [{"name": "yogurt"}, {"name": "granola"}]},
+            {"recipeName": "Turkey Club Sandwich", "cuisine": "American", "ingredients": [{"name": "turkey"}, {"name": "bread"}, {"name": "lettuce"}]},
+            {"recipeName": "Salmon Teriyaki", "cuisine": "Japanese", "ingredients": [{"name": "salmon"}, {"name": "rice"}, {"name": "soy sauce"}]}
+          ]},
+          {"dayName": "Wednesday", "meals": [
+            {"recipeName": "Scrambled Eggs", "cuisine": "American", "ingredients": [{"name": "eggs"}, {"name": "butter"}]},
+            {"recipeName": "Chicken Caesar Wrap", "cuisine": "American", "ingredients": [{"name": "chicken"}, {"name": "romaine"}]},
+            {"recipeName": "Vegetable Stir Fry", "cuisine": "Chinese", "ingredients": [{"name": "tofu"}, {"name": "broccoli"}, {"name": "soy sauce"}]}
+          ]}
+        ]
+      },
+      "expectedMinScore": 0.55,
+      "expectedMaxScore": 0.85
     }
   ],
   "shopping_completeness": [
@@ -204,6 +317,41 @@
       },
       "expectedPassed": false,
       "expectedMissing": ["eggs", "butter"]
+    },
+    {
+      "name": "Multi-recipe aggregation with shared ingredients",
+      "mealPlan": {
+        "days": [
+          {
+            "meals": [
+              {
+                "recipeName": "Scrambled Eggs",
+                "ingredients": [
+                  {"name": "eggs", "amount": 3, "unit": "large"},
+                  {"name": "butter", "amount": 1, "unit": "tbsp"}
+                ]
+              },
+              {
+                "recipeName": "Egg Salad Sandwich",
+                "ingredients": [
+                  {"name": "eggs", "amount": 4, "unit": "large"},
+                  {"name": "mayonnaise", "amount": 2, "unit": "tbsp"},
+                  {"name": "bread", "amount": 4, "unit": "slices"}
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "shoppingList": {
+        "items": [
+          {"name": "eggs", "amount": 7, "unit": "large"},
+          {"name": "butter", "amount": 1, "unit": "tbsp"},
+          {"name": "mayonnaise", "amount": 2, "unit": "tbsp"},
+          {"name": "bread", "amount": 4, "unit": "slices"}
+        ]
+      },
+      "expectedPassed": true
     }
   ]
 }

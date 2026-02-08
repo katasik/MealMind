@@ -3,6 +3,7 @@ google-generativeai>=0.4.0
 langchain>=0.1.0
 langchain-google-genai>=1.0.0
 opik>=1.0.0
+# opik-optimizer>=0.1.0  # Optional: for prompt optimization (requires Python <3.14)
 pydantic>=2.5.0
 httpx>=0.26.0
 python-telegram-bot>=20.7
