@@ -22,7 +22,7 @@ MEAL_PLAN_VARIANTS = {
 - Favorite ingredients (try to include): {favorites}
 - Disliked ingredients (NEVER include): {dislikes}
 - Cuisine preferences: {cuisines}
-- Cooking time preference: {cooking_time}
+- COOKING TIME LIMIT: {cooking_time} (total prep + cook time per recipe MUST NOT exceed this)
 - Language for recipe names/instructions: {language}
 
 ## AVAILABLE SAVED RECIPES (prioritize these when they fit)
@@ -36,11 +36,12 @@ MEAL_PLAN_VARIANTS = {
 2. STRICTLY avoid any ingredients that violate dietary restrictions - this is critical for health/safety
 3. Double-check EVERY ingredient against the restrictions above before including it
 4. {recipe_instruction}
-5. Ensure variety - don't repeat the same meal within the week
-6. Balance cuisines - mix different cuisines throughout the week
-7. Balance nutrition across the day (protein, vegetables, carbs)
-8. For breakfast, prefer quicker meals (<30 min total time)
-9. Generate detailed new recipes when saved recipes don't fit
+5. COOKING TIME IS STRICT: prepTimeMinutes + cookTimeMinutes MUST stay within the cooking time limit above. If the limit is "any", there is no limit.
+6. For breakfast, ALWAYS keep total time under 30 minutes regardless of the cooking time preference
+7. Ensure variety - don't repeat the same meal within the week
+8. Balance cuisines - mix different cuisines throughout the week
+9. Balance nutrition across the day (protein, vegetables, carbs)
+10. Generate detailed new recipes when saved recipes don't fit
 
 ## OUTPUT FORMAT
 Return ONLY valid JSON (no markdown, no explanation):
@@ -80,7 +81,7 @@ Categories for ingredients: produce, dairy, meat, pantry, spices, frozen, other"
 Meals per day: {meals_per_day}
 Dietary restrictions (MUST FOLLOW): {restrictions}
 Likes: {favorites} | Dislikes: {dislikes}
-Cuisines: {cuisines} | Cooking time: {cooking_time}
+Cuisines: {cuisines} | COOKING TIME LIMIT: {cooking_time} (STRICT — total prep+cook must not exceed this)
 Language: {language}
 
 {restriction_details}
@@ -88,7 +89,8 @@ Language: {language}
 {recipe_instruction}
 
 Rules: Follow ALL restrictions strictly. No repeated meals. Balance nutrition.
-Vary cuisines and proteins. Breakfast should be quick (<30 min).
+Vary cuisines and proteins. Breakfast MUST be under 30 min total.
+EVERY recipe's prepTimeMinutes + cookTimeMinutes MUST respect the cooking time limit.
 
 Saved recipes to prioritize: {saved_recipes}
 
@@ -112,7 +114,7 @@ Now create a {days}-day meal plan starting from {start_date}.
 - Favorite ingredients: {favorites}
 - Disliked ingredients (NEVER use): {dislikes}
 - Preferred cuisines: {cuisines}
-- Cooking time: {cooking_time}
+- COOKING TIME LIMIT: {cooking_time} (STRICT — every recipe's prep+cook MUST NOT exceed this)
 - Language: {language}
 
 Saved recipes: {saved_recipes}
@@ -121,9 +123,10 @@ Saved recipes: {saved_recipes}
 
 Requirements:
 1. BEFORE adding any ingredient, verify it doesn't violate the restrictions above
-2. Ensure variety — different recipes, cuisines, and proteins each day
-3. Balance nutrition (protein + vegetables + carbs at each meal)
-4. Breakfast < 30 min total time
+2. EVERY recipe's prepTimeMinutes + cookTimeMinutes MUST stay within the cooking time limit. If "any", no limit.
+3. Breakfast MUST be under 30 minutes total regardless of cooking time preference
+4. Ensure variety — different recipes, cuisines, and proteins each day
+5. Balance nutrition (protein + vegetables + carbs at each meal)
 
 BEFORE OUTPUTTING YOUR RESPONSE:
 - Re-read the restrictions at the top

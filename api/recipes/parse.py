@@ -216,54 +216,41 @@ class handler(BaseHTTPRequestHandler):
                 op.log_score('extraction_quality', evaluation['score'])
                 op.log_score('hallucination_free', 0.0 if evaluation['hallucinationsDetected'] else 1.0)
 
-                # Only save if evaluation passes
-                if evaluation['passed']:
-                    recipe['sourceType'] = source_type
-                    if source_url:
-                        recipe['sourceUrl'] = source_url
+                # Always save the recipe (evaluation is informational, not blocking)
+                recipe['sourceType'] = source_type
+                if source_url:
+                    recipe['sourceUrl'] = source_url
 
-                    recipe_id = save_recipe(family_id, recipe)
-                    recipe['id'] = recipe_id
+                recipe_id = save_recipe(family_id, recipe)
+                recipe['id'] = recipe_id
 
-                    # Save evaluation result
-                    save_evaluation_result(
-                        trace_id=op.trace_id,
-                        operation_type='recipe_extraction',
-                        family_id=family_id,
-                        scores={'extractionQuality': evaluation['score']},
-                        passed=evaluation['passed'],
-                        metadata={
-                            'recipeId': recipe_id,
-                            'recipeName': recipe.get('name'),
-                            'sourceType': source_type,
-                            'evaluationDetails': evaluation
-                        }
-                    )
-
-                    return {
-                        'success': True,
-                        'recipe': recipe,
-                        'evaluation': {
-                            'score': evaluation['score'],
-                            'passed': evaluation['passed'],
-                            'judgesAgree': evaluation['judgesAgree'],
-                            'hallucinationsDetected': evaluation['hallucinationsDetected']
-                        },
-                        'traceId': op.trace_id
+                # Save evaluation result for observability
+                save_evaluation_result(
+                    trace_id=op.trace_id,
+                    operation_type='recipe_extraction',
+                    family_id=family_id,
+                    scores={'extractionQuality': evaluation['score']},
+                    passed=evaluation['passed'],
+                    metadata={
+                        'recipeId': recipe_id,
+                        'recipeName': recipe.get('name'),
+                        'sourceType': source_type,
+                        'evaluationDetails': evaluation
                     }
-                else:
-                    return {
-                        'success': False,
-                        'error': 'Recipe extraction did not pass quality evaluation',
-                        'evaluation': {
-                            'score': evaluation['score'],
-                            'passed': False,
-                            'judgesAgree': evaluation['judgesAgree'],
-                            'hallucinationsDetected': evaluation['hallucinationsDetected'],
-                            'reasoning': evaluation.get('reasoning', '')
-                        },
-                        'traceId': op.trace_id
-                    }
+                )
+
+                return {
+                    'success': True,
+                    'recipe': recipe,
+                    'evaluation': {
+                        'score': evaluation['score'],
+                        'passed': evaluation['passed'],
+                        'judgesAgree': evaluation['judgesAgree'],
+                        'hallucinationsDetected': evaluation['hallucinationsDetected'],
+                        'reasoning': evaluation.get('reasoning', '')
+                    },
+                    'traceId': op.trace_id
+                }
 
             except Exception as e:
                 return {
