@@ -165,12 +165,12 @@ export async function updateShoppingItem(
 }
 
 export async function sendShoppingListToTelegram(
-  listId: string,
+  mealPlanId: string,
   chatId: number
 ): Promise<{ success: boolean; messageId?: number }> {
   return fetchApi<{ success: boolean; messageId?: number }>('/shopping/telegram', {
     method: 'POST',
-    body: JSON.stringify({ listId, chatId }),
+    body: JSON.stringify({ mealPlanId, chatId }),
   });
 }
 

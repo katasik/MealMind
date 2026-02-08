@@ -197,18 +197,36 @@ export async function getMealPlan(mealPlanId: string): Promise<MealPlan | null> 
 
 export async function getLatestMealPlan(familyId: string): Promise<MealPlan | null> {
   const db = getDb();
-  const q = query(
-    collection(db, 'mealPlans'),
-    where('familyId', '==', familyId),
-    orderBy('weekStartDate', 'desc'),
-    limit(1)
-  );
-  const snapshot = await getDocs(q);
-  if (snapshot.empty) return null;
-  return {
-    id: snapshot.docs[0].id,
-    ...convertTimestamp(snapshot.docs[0].data()),
-  } as MealPlan;
+  try {
+    // Ordered query (requires composite index: familyId asc + weekStartDate desc)
+    const q = query(
+      collection(db, 'mealPlans'),
+      where('familyId', '==', familyId),
+      orderBy('weekStartDate', 'desc'),
+      limit(1)
+    );
+    const snapshot = await getDocs(q);
+    if (snapshot.empty) return null;
+    return {
+      id: snapshot.docs[0].id,
+      ...convertTimestamp(snapshot.docs[0].data()),
+    } as MealPlan;
+  } catch (e) {
+    // Fallback: fetch all plans and sort client-side (no composite index needed)
+    console.warn('getLatestMealPlan: ordered query failed, using fallback.', e);
+    const q = query(
+      collection(db, 'mealPlans'),
+      where('familyId', '==', familyId)
+    );
+    const snapshot = await getDocs(q);
+    if (snapshot.empty) return null;
+    const plans = snapshot.docs.map(d => ({
+      id: d.id,
+      ...convertTimestamp(d.data()),
+    })) as MealPlan[];
+    plans.sort((a, b) => (b.weekStartDate || '').localeCompare(a.weekStartDate || ''));
+    return plans[0];
+  }
 }
 
 export async function getMealPlanByWeek(

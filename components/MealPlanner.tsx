@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Calendar, Sparkles, Check, AlertCircle, Loader2, Trash2, Download, Info, X, BookOpen, Wand2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar, Sparkles, Check, AlertCircle, Loader2, Trash2, Download, Info, X, BookOpen, Wand2, ChevronLeft, ChevronRight, ShoppingCart } from 'lucide-react';
 import MealCard from './MealCard';
 import MealDetailsModal from './MealDetailsModal';
 import { cn, formatDate, getWeekStartDate, shiftWeek, formatWeekRange } from '@/lib/utils';
@@ -14,9 +14,10 @@ interface MealPlannerProps {
   onMealPlanChange?: (mealPlan: MealPlan | null) => void;
   viewedWeekStart?: string | null;
   onWeekChange?: (weekStart: string) => void;
+  onOpenShoppingList?: () => void;
 }
 
-export default function MealPlanner({ initialMealPlan, familyId, onMealPlanChange, viewedWeekStart, onWeekChange }: MealPlannerProps) {
+export default function MealPlanner({ initialMealPlan, familyId, onMealPlanChange, viewedWeekStart, onWeekChange, onOpenShoppingList }: MealPlannerProps) {
   const [mealPlan, setMealPlanState] = useState<MealPlan | null>(initialMealPlan || null);
 
   // Use a ref to always have access to the latest callback without causing re-renders
@@ -369,6 +370,16 @@ export default function MealPlanner({ initialMealPlan, familyId, onMealPlanChang
                   <span>Evaluating...</span>
                 </>
               )}
+            </button>
+          )}
+          {onOpenShoppingList && (
+            <button
+              onClick={onOpenShoppingList}
+              className="inline-flex items-center space-x-2 bg-primary-100 text-primary-700 px-4 py-2 rounded-lg font-medium hover:bg-primary-200 transition-colors"
+              title="Shopping List"
+            >
+              <ShoppingCart className="w-4 h-4" />
+              <span className="hidden sm:inline">Shopping List</span>
             </button>
           )}
           <button

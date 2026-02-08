@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import MealPlanner from '@/components/MealPlanner';
 import ShoppingListModal from '@/components/ShoppingListModal';
 import { getLatestMealPlan, getMealPlanByWeek, initializeDemoFamily } from '@/lib/firebase';
-import { Loader2, ShoppingCart } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import type { MealPlan } from '@/lib/types';
 
 export default function MealPlanPage() {
@@ -78,19 +78,9 @@ export default function MealPlanPage() {
           onMealPlanChange={setMealPlan}
           viewedWeekStart={viewedWeekStart}
           onWeekChange={handleWeekChange}
+          onOpenShoppingList={() => setShowShoppingModal(true)}
         />
       </div>
-
-      {/* Floating Action Button for Shopping List */}
-      {mealPlan && (
-        <button
-          onClick={() => setShowShoppingModal(true)}
-          className="fixed bottom-6 right-6 z-40 w-14 h-14 bg-primary-600 text-white rounded-full shadow-lg hover:bg-primary-700 transition-colors flex items-center justify-center hover:shadow-xl"
-          title="Shopping List"
-        >
-          <ShoppingCart className="w-6 h-6" />
-        </button>
-      )}
 
       {/* Shopping List Modal */}
       {showShoppingModal && mealPlan && (

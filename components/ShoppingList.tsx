@@ -97,7 +97,7 @@ export default function ShoppingList({ mealPlanId, familyId }: ShoppingListProps
         return;
       }
 
-      const result = await sendShoppingListToTelegram(shoppingList.id, chat.chatId);
+      const result = await sendShoppingListToTelegram(mealPlanId, chat.chatId);
       if (result.success) {
         setTelegramStatus('success');
         setTimeout(() => setTelegramStatus('idle'), 3000);
